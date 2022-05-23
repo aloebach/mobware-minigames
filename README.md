@@ -6,12 +6,11 @@ Designed for the Playdate, this framework will allow you to compile your own min
 
 The Mobware Minigames minigame framework will load a minigame which is programmed similar to a normal playdate game. See the minigame template in the minigame folder for details!
 
-To get started, clone the repository. 
-In z-shell: `git clone https://github.com/aloebach/mobware-minigames.git`
+To get started, clone the repository: `git clone https://github.com/aloebach/mobware-minigames.git`
 
 Rename and edit the `minigame_template` folder 
-To compile and run the minigame jam game file, use the following command in z-shell:
-`pdc ./mobware-minigames  mobware-minigames.pdx && open mobware-minigames.pdx`
+To compile and run the pdx game file, use the following command in z-shell:
+`pdc ./mobware-minigames mobware-minigames.pdx && open mobware-minigames.pdx`
 
 Once you've cloned the repository, open Minigames/minigame-template and follow the instructions from there! After you've set up your own minigame using the template, you can set the DEBUG_GAME variable in `main.lua` to the name of your minigame to test. 
 
