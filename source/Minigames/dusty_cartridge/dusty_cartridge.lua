@@ -108,7 +108,7 @@ function dusty_cartridge.update()
 
 				-- Play static sound effect
 				static_noise:play(0) -- loop static noise
-				static_noise:setVolume(0.5) -- loop static noise
+				static_noise:setVolume(0.3) -- loop static noise
 
 				gamestate = 'defeated'
 				playdate.sound.micinput.stopListening()		
