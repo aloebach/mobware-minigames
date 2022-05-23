@@ -1,0 +1,8 @@
+name=ART7 DEMO
+author=Ledbetter Games
+description=Welcome to ART7! What is art even? Come see some things!
+bundleID=game.pulp.LedbetterGames.ART7DEMO
+version=1
+buildNumber=123
+imagePath=launcher/
+launchSoundPath=launcher/
