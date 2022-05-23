@@ -1,4 +1,7 @@
 {
+  "index.ignored_file_patterns" : [
+    "support\/*"
+  ],
   "workspace.art_style" : 1,
   "workspace.color" : 2,
   "workspace.name" : "MobWare Minigames"

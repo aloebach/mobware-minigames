@@ -6,20 +6,15 @@
 
 -- This main program will reference the Minigames and run the minigames by calling their functions to execute the minigame's logic
 
-To-Do's:
--Add references to frame timers -> minigames should use frame timers so that the difficulty scales properly
--Add story-linked transition animations and polish main game interface
--Add opening sequence
--Add ending sequence
-
-- FIX BUG THAT OCCURS WHEN CHANGING GAMESTATE DURING playdate.wait()
+known bugs:
+- Game hangs if you change the gamestate via the menu during playdate.wait()
 
 --> maybe call callback functions via "pcall" to avoid corner case that they're called while a game is being loaded/unloaded
 ]]
 
 -- variables for use with testing/debugging:
---DEBUG_GAME = "dusty_cartridge" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
---SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing how the game runs at the max framerate of 40fps
+-- DEBUG_GAME = "dusty_cartridge" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+-- SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
 
 -- Import CoreLibs
 import "CoreLibs/object"
@@ -138,7 +133,7 @@ function playdate.update()
 			set_black_background()
 			
 			-- TO-DO: ONLY SHOW MENU INDICATOR IF THE PLAYER HAS UNLOCKED NEW GOODIES! 
-			-- show menu indicator for ~1.2 seconds
+			-- add menu indicator, then remove after ~1.2 seconds
 			mobware.MenuIndicator.start()
 			menu_indicator_timer = playdate.timer.new( 1200, function() mobware.MenuIndicator.stop() end ) 
 			
@@ -262,29 +257,28 @@ function playdate.update()
 			
 			minigame_cleanup()
 			
-			-- Set up PlayDate sprite for transition animation
+			-- Set up demon sprite for transition animation
 			demon_sprite = AnimatedSprite.new( demon_spritesheet )
-			demon_sprite:addState("animate", nil, nil, {tickStep = 2, frames = {2,4}}, true)
-			demon_sprite:addState("throwing", 1, 4, {tickStep = 2})
-			demon_sprite:addState("laughing", nil, nil, {tickStep = 2, frames = {2,4}})
-			demon_sprite:addState("angry", nil, nil, {tickStep = 2, frames = {5,6}})
+			demon_sprite:addState("animate", nil, nil, {tickStep = 3, frames = {2,4}}, true)
+			demon_sprite:addState("throwing", 1, 4, {tickStep = 3})
+			demon_sprite:addState("laughing", nil, nil, {tickStep = 3, frames = {2,4}})
+			demon_sprite:addState("angry", nil, nil, {tickStep = 3, frames = {5,6}})
 			demon_sprite:moveTo(200, 120)
 			demon_sprite:setZIndex(1)
 			
-			if game_result == 0 then -- animate demon laughing if player lost minigame
+			-- animate demon laughing or crying depending on if the player won the minigame
+			if game_result == 0 then 
 				demon_sprite:changeState("laughing")
 			elseif game_result == 1 then
 				demon_sprite:changeState("angry")
 			end
 			
-			
-			--[[
+			-- Set up PlayDate sprite for transition animation			
 			playdate_sprite = AnimatedSprite.new( playdate_spritesheet )
 			playdate_sprite:addState("animate", 1, 18, {tickStep = 1, yoyo = true, loop = 2}, true)
 			playdate_sprite:moveTo(200, 120)
 			playdate_sprite:setZIndex(2)
-			]]
-
+			
 			-- Timer will display victory/defeat animation, then change to normal transition animation
 			transition_timer1 = playdate.frameTimer.new(20,  
 				function() 
@@ -293,31 +287,17 @@ function playdate.update()
 				end)
 			-- playdate.easingFunctions.outCubic(t, b, c, d) 
 			-- playdate.easingFunctions.outCubic(timer.currentTime, 120, 120, d) 
-
 		end
 
 
 	elseif GameState == 'transition' then
 		-- Play transition animation between minigames
 
-		-- TO-DO: UPDATE WITH ANTAGONIST ANIMATIONS FOR VICTORY AND DEFEAT, 
-		-- AND REPLACE ROTATION WITH PRERENDERED VERSION TO AVOID SLOWDOWN ON PLAYDATE HARDWARE
-
 		-- update timer
 		playdate.frameTimer.updateTimers()
-
-		--[[NEW CODE
-		print("time:",timer.currentTime)
-		local new_y
-		if timer.currentTime <= 10000 then
-			new_y = playdate.easingFunctions.outCubic(timer.currentTime, 120, 120, 1000) 
-		else
-			new_y = playdate.easingFunctions.outCubic(timer.currentTime, 240, -120, 1000) 
-		end
-		playdate_sprite:moveTo(200, new_y)
-		--END NEW CODE]]
 		
-		gfx.sprite.update() -- updates all sprites
+		-- updates sprites
+		gfx.sprite.update() 
 		
 		-- display UI for transition
 		-- TO-DO: Update UI elements
@@ -326,13 +306,11 @@ function playdate.update()
 		mobware.print("lives: " .. lives, 15, 65)
 		gfx.setFont(mobware_default_font) -- reset font to default
 		
-		--if timer.currentTime >= 2100 then GameState = 'initialize' end
-
 
 	elseif GameState == 'game_over' then
 		-- TO-DO: UPDATE WITH GAME OVER SEQUENCE
 
-  		-- Display game over screen
+		-- Display game over screen
 		gfx.clear(gfx.kColorBlack)
 		gfx.setFont(mobware_font_M)
 		mobware.print("GAME OVER!")  
