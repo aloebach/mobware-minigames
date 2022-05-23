@@ -1,7 +1,0 @@
-name=Rescues
-author=Raspberrybrain
-description=
-bundleID=game.pulp.Raspberrybrain.Rescues
-version=1
-imagePath=launcher/
-launchSoundPath=launcher/
