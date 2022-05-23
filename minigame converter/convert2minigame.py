@@ -1,6 +1,8 @@
 # This python script will take a directory containing Playdate Lua code as input and convert it into a minigame
 # Author: Andrew Loebach
 
+# NOTE: THIS SCRIPT IS A WORK IN PROGRESS AND IS NOT YET FUNCTIONAL!
+
 ### IMPORTING PACKAGES AND SETTING CREDENTIALS ###
 #import json
 import sys
