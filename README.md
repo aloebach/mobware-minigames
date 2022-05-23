@@ -15,6 +15,7 @@ To compile and run the pdx game file, use the following command in z-shell:
 Once you've cloned the repository, open Minigames/minigame-template and follow the instructions from there! After you've set up your own minigame using the template, you can set the DEBUG_GAME variable in `main.lua` to the name of your minigame to test. 
 
 
+
 ## Minigame guidelines 
 * Minigames should not last longer 10s or so.
 * The minigame should be in its own folder under "Minigames", and the <minigame_name> folder should have the same name as <minigame_name>.lua. 
