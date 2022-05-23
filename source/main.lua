@@ -4,7 +4,8 @@
 	Author: Andrew Loebach
 	loebach@gmail.com
 
---This main program will reference the Minigames and run the minigames by calling their functions to run the minigame's logic
+-- This main program will reference the Minigames and run the minigames by calling their functions to execute the minigame's logic
+-- i'm adding this line to test making a commit to the git repo!
 
 To-Do's:
 -Add references to frame timers -> minigames should use frame timers so that the difficulty scales properly
