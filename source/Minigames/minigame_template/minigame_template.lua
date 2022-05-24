@@ -9,7 +9,7 @@
 ]]
 
 
---[[ NOTE: The following libraries are already imported in main.lua, so there's no need to define them in the minigame
+--[[ NOTE: The following libraries are already imported in main.lua, so there's no need to define them in the minigame package
 import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/sprites"
