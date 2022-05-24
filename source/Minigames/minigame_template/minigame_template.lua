@@ -22,7 +22,7 @@ import "CoreLibs/easing"
 ]]
 
 -- Import any supporting libraries from minigame's folder
-	--> Note that all supporting files should be located under 'Minigames/minigame_template/''
+	--> Note that all supporting files should be located in the minigame's directory "Minigames/minigame_template/" (or any subdirectory) 
 --import 'Minigames/minigame_template/lib/AnimatedSprite' 
 
 
