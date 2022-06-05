@@ -135,8 +135,7 @@ function generate_credits()
 
 	-- Special thanks:
 	--add playdate with "thank you!" on the display
-	--print_credits("special thanks!", "shaun inman", credits_y)
-	--print_credits("special thanks!", "nic magnier", credits_y)
+	print_credits("special thanks to", "nic magnier", credits_y)
 
 	-- Add credits from minigames:
 	for _i, minigame in ipairs(minigame_list) do
