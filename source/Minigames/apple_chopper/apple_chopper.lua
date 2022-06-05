@@ -22,6 +22,7 @@ is_apple_cut = false
 --mobware.crankIndicator.start()
 
 local gamestate = "play"
+local game_timer = playdate.frameTimer.new( 20 * 4, function() gamestate = "defeat" end ) 
 
 function apple_chopper.update()
 	sequence.update()
@@ -44,18 +45,8 @@ function apple_chopper.update()
 		anim_x:start()
 		anim_y:start()
 		is_apple_cut = true
-		--win()
-		--DREW'S TEST CODE:
-		--anim_x = nil
-		--anim_y = nil
 		game_timer = playdate.frameTimer.new( 20, function() gamestate = "victory" end ) 
 	end
-	
-	if anim_y:isDone() then
-		--quit()
-		game_timer = playdate.frameTimer.new( 20, function() gamestate = "defeat" end ) 
-	end
-
 
 	if gamestate == "victory" then
 		return 1
