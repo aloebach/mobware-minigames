@@ -27,16 +27,16 @@ import "CoreLibs/easing"
 
 
 -- Define name for minigame package -> should be the same name as the name of the folder and name of <minigame>.lua 
-minigame_template = {}
+local minigame_template = {}
 
 
 -- all of the code here will be run when the minigame is loaded, so here we'll initialize our graphics and variables:
 local gfx <const> = playdate.graphics
 
 -- animation for on-screen Playdate sprite
-playdate_image_table = gfx.imagetable.new("Minigames/minigame_template/images/playdate")
-low_battery_image_table = gfx.imagetable.new("Minigames/minigame_template/images/playdate_low_battery")
-pd_sprite = gfx.sprite.new(image_table)
+local playdate_image_table = gfx.imagetable.new("Minigames/minigame_template/images/playdate")
+local low_battery_image_table = gfx.imagetable.new("Minigames/minigame_template/images/playdate_low_battery")
+local pd_sprite = gfx.sprite.new(image_table)
 
 -- update sprite's frame so that the sprite will reflect the crank's actual position
 local crank_position = playdate.getCrankPosition() -- Returns the absolute position of the crank (in degrees). Zero is pointing straight up parallel to the device
@@ -58,14 +58,14 @@ local click_noise = playdate.sound.sampleplayer.new('Minigames/minigame_template
 --local victory_theme = playdate.sound.fileplayer.new('Minigames/TV_Tuner/sounds/static_noise')
 
 -- start timer	 
-MAX_GAME_TIME = 6 -- define the time at 20 fps that the game will run betfore setting the "defeat"gamestate
-game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
+local MAX_GAME_TIME = 6 -- define the time at 20 fps that the game will run betfore setting the "defeat"gamestate
+local game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
 	--> after <MAX_GAME_TIME> seconds (at 20 fps) will set "defeat" gamestate
 	--> I'm using the frame timer because that allows me to increase the framerate gradually to increase the difficulty of the minigame
 
 
 -- set initial gamestate and start prompt for player to hit the B button
-gamestate = 'hitB'
+local gamestate = 'hitB'
 mobware.BbuttonIndicator.start()
 
 
