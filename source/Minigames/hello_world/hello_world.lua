@@ -5,16 +5,8 @@
 	"Hello World" Minigame demo for Mobware Minigames
 ]]
 
---NOTE: Imports to corelibs won't work in this function! they need to be included in the library
---needed for using animating playdate's sprite library
---import 'CoreLibs/sprites'
---import 'CoreLibs/object'
---import 'Minigames/hello_world/lib/AnimatedSprite' --used to generate animations from spritesheet
-import 'Minigames/hello_world/lib/object' --used to generate animations from spritesheet
-
-
 -- Define name for minigame package
-hello_world = {}
+local hello_world = {}
 
 local gfx <const> = playdate.graphics
 	
@@ -22,9 +14,9 @@ local gfx <const> = playdate.graphics
 mobware.crankIndicator.start()
 
 -- Initialize animation for on-screen Playdate sprite
-playdate_helloWorld_table = gfx.imagetable.new("Minigames/hello_world/images/hello_world")
+local playdate_helloWorld_table = gfx.imagetable.new("Minigames/hello_world/images/hello_world")
 
-pd_sprite = gfx.sprite.new(image_table)
+local pd_sprite = gfx.sprite.new(image_table)
 pd_sprite:setImage(playdate_helloWorld_table:getImage(1))
 pd_sprite:moveTo(200, 120)
 pd_sprite:add()
@@ -32,11 +24,18 @@ pd_sprite.frame = 1
 pd_sprite.crank_counter = 0
 pd_sprite.total_frames = 16
 
+-- start timer 
+MAX_GAME_TIME = 4 -- define the time at 20 fps that the game will run betfore setting the "defeat" gamestate
+game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) 
+	--> after <MAX_GAME_TIME> seconds (at 20 fps) will move to "defeat" gamestate
 
 function hello_world.update()
 
 	-- update sprite animations
 	gfx.sprite.update() -- updates all sprites
+	
+	-- update frame timer
+	playdate.frameTimer.updateTimers()
 
 	-- For testing: return 0 if "B" button is pressed
 	if playdate.buttonIsPressed('b') then return 0 end
@@ -51,13 +50,20 @@ function hello_world.update()
 	end
 
 	-- Loss condition
-	--[[ if timer > 8s then show "battery low icon and exit" then
-		-- add low battery graphics
-		playdate.wait(1000)	-- Pause 1s before returning to main.lua
+	if gamestate == "defeat" then 
+		-- if player has lost, show images of playdate running out of power then exit
+		local playdate_low_battery_image = gfx.image.new("Minigames/hello_world/images/playdate_low_battery")
+		local low_battery = gfx.sprite.new(playdate_low_battery_image)
+		low_battery:moveTo(150, 75)
+		low_battery:addSprite()
+		gfx.sprite.update() 
+		
+		-- wait another 2 seconds then exit
+		playdate.wait(2000)	-- Pause 2s before ending the minigame
+		
+		-- return 0 to indicate that the player has lost and exit the minigame 
 		return 0
 	end
-	]]
-
 
 end
 
@@ -85,7 +91,6 @@ function hello_world.cranked(change, acceleratedChange)
 
 	pd_sprite:setImage(playdate_helloWorld_table:getImage(pd_sprite.frame))
 end
-
 
 
 -- Minigame package should return itself
