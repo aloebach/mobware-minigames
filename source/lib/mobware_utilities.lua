@@ -41,12 +41,6 @@ function minigame_cleanup()
 	minigame = nil
 	_minigame_env = nil	
 	
-	-- kill any sounds still playing
-	local sounds = playdate.sound.playingSources()
-	for _i, sound in ipairs(sounds) do
-		sound:stop() 
-	end	
-	
 	-- Reset values for main game and clean up assets/memory
 	gfx.clear()
 	playdate.display.setRefreshRate( SET_FRAME_RATE or math.min(20 + time_scaler, 40) )
@@ -58,7 +52,13 @@ function minigame_cleanup()
 
 	-- set font used in transition screen if I'm displaying text
 	gfx.setFont(mobware_default_font)
-
+	
+	-- kill any sounds still playing
+	local sounds = playdate.sound.playingSources()
+	for _i, sound in ipairs(sounds) do
+		sound:stop() 
+	end	
+	
 	--trigger garbage collection to clear up memory
 	--collectgarbage("collect")	
 end
