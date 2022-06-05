@@ -13,7 +13,7 @@ known bugs:
 ]]
 
 -- variables for use with testing/debugging:
--- DEBUG_GAME = "dusty_cartridge" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+-- DEBUG_GAME = "apple_chopper" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
 -- SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
 
 -- Import CoreLibs
@@ -40,7 +40,6 @@ local GameState
 local minigame
 local score
 local lives
---local time_scaler
 local GAME_WINNING_SCORE = 20 --score that, when reached, will trigger the ending and show credits
 
 -- generate table of minigames from directories in "Minigames" folder
@@ -174,7 +173,7 @@ function playdate.update()
 			
 			-- if player presses "A", then load bonus game
 			if playdate.buttonIsPressed("A") then
-				minigame_cleanup()
+				pcall(minigame_cleanup)
 				local bonus_game = bonus_game_list[bonus_game_number]
 				minigame = load_minigame('extras/' .. bonus_game .. '/' .. bonus_game)
 				GameState = 'play' 
@@ -219,7 +218,7 @@ function playdate.update()
 		local minigame_path = 'Minigames/' .. minigame_name .. '/' .. minigame_name -- build minigame file path 
 				
 		-- Clean up graphical environment for minigame
-		minigame_cleanup()
+		pcall(minigame_cleanup)
 		
 		-- Load minigame package:
 		minigame = load_minigame(minigame_path)
@@ -252,7 +251,7 @@ function playdate.update()
 				time_scaler = time_scaler + 1
 			end
 			
-			minigame_cleanup()
+			pcall(minigame_cleanup)
 			
 			-- Set up demon sprite for transition animation
 			set_black_background()
@@ -322,7 +321,7 @@ function playdate.update()
 		-- Play credits sequence
 		
 		-- load "credits" as minigame
-		minigame_cleanup()
+		pcall(minigame_cleanup)
 		minigame = load_minigame('credits') 		
 		GameState = 'play' 		
 
@@ -361,7 +360,7 @@ playdate.getSystemMenu():addMenuItem(
     'Main Game',
     function()
 		if GameState ~= "menu" then
-			minigame_cleanup()
+			pcall(minigame_cleanup)
 			menu_initialized = nil
         	GameState = "menu"
 		end
@@ -372,7 +371,7 @@ playdate.getSystemMenu():addMenuItem(
 playdate.getSystemMenu():addMenuItem(
 	'bonus games',
 	function()
-		minigame_cleanup()
+		pcall(minigame_cleanup)
 		menu_initialized = nil
 		GameState = "bonus menu"
 	end
@@ -382,7 +381,7 @@ playdate.getSystemMenu():addMenuItem(
 playdate.getSystemMenu():addMenuItem(
 	'Game Credits',
 	function()
-		minigame_cleanup()
+		pcall(minigame_cleanup)
 		GameState = "credits"
 	end
 )
