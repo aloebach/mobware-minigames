@@ -50,10 +50,15 @@ local defeat_message = ""
 
 -- Initialize music / sound effects
 local click_noise = playdate.sound.sampleplayer.new('Minigames/gated_castle/sounds/click')
+click_noise:setVolume(0.4)
 local start_theme = playdate.sound.fileplayer.new('Minigames/gated_castle/sounds/trumpet')
+start_theme:setVolume(0.4)
 local victory_theme = playdate.sound.fileplayer.new('Minigames/gated_castle/sounds/victory')
+victory_theme:setVolume(0.4)
 local castle_collapse_sound = playdate.sound.fileplayer.new('Minigames/gated_castle/sounds/castle_collapse')
+castle_collapse_sound:setVolume(0.4)
 local scream_sound = playdate.sound.fileplayer.new('Minigames/gated_castle/sounds/scream')
+scream_sound:setVolume(0.1) 
 
 local gamestate = nil
 
@@ -140,6 +145,8 @@ local function initialize()
 			gfx.clearClipRect()
 		end
 	)
+	
+	mobware.crankIndicator.start()
 
 	start_theme:play(1)
 end
@@ -152,7 +159,6 @@ function gated_castle.update()
 	--local line = gfx.drawLine(0, 180, 400, 180)
 	--line:setZIndex(-2)
 
-	mobware.crankIndicator.start()
 
 	local collisions = gate:overlappingSprites()
 	if #collisions >= 1 then
