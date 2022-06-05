@@ -10,10 +10,10 @@ To get started, clone the repository: `git clone https://github.com/aloebach/mob
 
 You can rename and edit the `minigame_template` folder and `minigame_template.lua` to use it as a template for your own minigame.
 
-To compile and run the pdx game file, use the following shell command in:
+To compile and run the pdx game file, use the following shell command:
 `pdc ./source mobware-minigames.pdx && open mobware-minigames.pdx`
 
-Once you've cloned the repository, open Minigames/minigame-template and follow the instructions from there! After you've set up your own minigame using the template, you can set the DEBUG_GAME variable in `main.lua` to the name of your minigame to test. 
+Once you've cloned the repository, open Minigames/minigame-template and follow the instructions from there! After you've set up your own minigame using the template, you can set the `DEBUG_GAME` variable in `main.lua` to the name of your minigame to test. 
 
 
 
