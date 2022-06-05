@@ -1,0 +1,7 @@
+name=Mobware Minigames
+author=Drew Loebach
+description=crowd-developed minigame collection!
+bundleID=aloebach.minigames.mobware
+version=1.1
+imagePath=launcher/
+launchSoundPath=launcher/

@@ -8,9 +8,10 @@ The Mobware Minigames minigame framework will load a minigame which is programme
 
 To get started, clone the repository: `git clone https://github.com/aloebach/mobware-minigames.git`
 
-Rename and edit the `minigame_template` folder 
-To compile and run the pdx game file, use the following command in z-shell:
-`pdc ./mobware-minigames mobware-minigames.pdx && open mobware-minigames.pdx`
+You can rename and edit the `minigame_template` folder and `minigame_template.lua` to use it as a template for your own minigame.
+
+To compile and run the pdx game file, use the following shell command in:
+`pdc ./source mobware-minigames.pdx && open mobware-minigames.pdx`
 
 Once you've cloned the repository, open Minigames/minigame-template and follow the instructions from there! After you've set up your own minigame using the template, you can set the DEBUG_GAME variable in `main.lua` to the name of your minigame to test. 
 
