@@ -27,9 +27,6 @@ import "CoreLibs/ui"
 import "CoreLibs/crank"
 import "CoreLibs/easing"
 
--- for ART7 minigame:
---import "CoreLibs/utilities/sampler"
-
 -- Import supporting libraries
 import 'lib/AnimatedSprite' --used to generate animations from spritesheet
 import 'lib/mobware_ui'
@@ -258,6 +255,7 @@ function playdate.update()
 			minigame_cleanup()
 			
 			-- Set up demon sprite for transition animation
+			set_black_background()
 			demon_sprite = AnimatedSprite.new( demon_spritesheet )
 			demon_sprite:addState("animate", nil, nil, {tickStep = 3, frames = {2,4}}, true)
 			demon_sprite:addState("throwing", 1, 4, {tickStep = 3})
