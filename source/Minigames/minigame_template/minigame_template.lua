@@ -163,7 +163,7 @@ function minigame_template.cranked(change, acceleratedChange)
 
 	-- update sprite's frame so that the sprite will reflect the crank's actual position
 	local crank_position = playdate.getCrankPosition() -- Returns the absolute position of the crank (in degrees). Zero is pointing straight up parallel to the device
-	local frame_num = math.floor( crank_position / 45.1 + 1 ) -- adding .1 to fix bug that occurs if crank_position = 360
+	local frame_num = math.floor( crank_position / 45.1 + 1 ) -- adding .1 to fix bug that occurs if crank_position ~= 360
 	pd_sprite:setImage(playdate_image_table:getImage(frame_num))
 
 end
