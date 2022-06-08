@@ -75,7 +75,7 @@ function monster_mash.update()
 
 	if zilla_gamestate == 'play' then
 		-- player mashing A will score points for monzilla
-		if playdate.buttonJustPressed('a') then zilla_score = zilla_score + 1.2 end
+		if playdate.buttonJustPressed('a') then zilla_score = zilla_score + 1.4 end
 
 		-- mechamonzilla will slowly and surely chip away at monzilla
 		zilla_score = zilla_score - 0.15
