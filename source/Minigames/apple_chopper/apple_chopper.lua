@@ -19,15 +19,14 @@ anim_x = sequence.new():from(70):to(20, 0.5, "inSine")
 anim_y = sequence.new():from(100):to(240, 0.5, "inBack")
 
 is_apple_cut = false
---mobware.crankIndicator.start()
+mobware.crankIndicator.start()
 
 local gamestate = "play"
 local game_timer = playdate.frameTimer.new( 20 * 4, function() gamestate = "defeat" end ) 
 
+
 function apple_chopper.update()
 	sequence.update()
-	
-	mobware.print("Cut the Apple")
 	
 	-- update frame timers
 	playdate.frameTimer.updateTimers()
@@ -41,7 +40,7 @@ function apple_chopper.update()
 	handTransform:translate( -150, 0 )
 	handTransform:rotate( angle )
 
-	if is_apple_cut==false and angle < 350 and angle > 250 then
+	if is_apple_cut==false and angle < 370 and angle > 340 then
 		anim_x:start()
 		anim_y:start()
 		is_apple_cut = true
@@ -57,6 +56,7 @@ function apple_chopper.update()
 	end
 	
 	playdate.graphics.clear( playdate.graphics.kColorWhite )
+	playdate.graphics.sprite.update() -- updates all sprites
 
 	if is_apple_cut then
 		apple_slice:draw(70, 100)
@@ -65,13 +65,13 @@ function apple_chopper.update()
 	apple:draw( anim_x:get(), anim_y:get() )
 end
 
---[[
+
 function apple_chopper.cranked(change, acceleratedChange)
 	-- Once crank is turned, turn off crank indicator
 	if mobware.crankIndicator then
 		mobware.crankIndicator.stop()
 	end
 end
-]]
+
 
 return apple_chopper
