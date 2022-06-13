@@ -73,7 +73,7 @@ function mobware.DpadIndicator.start(direction1, direction2)
 		mobware.DpadIndicator_sprite:addState("custom",nil,nil, {tickStep = 3, frames = {frame1,frame2}}, true)
 		mobware.DpadIndicator_sprite:changeState("custom")
 	end
-	mobware.DpadIndicator_sprite:moveTo(70,175)
+	mobware.DpadIndicator_sprite:moveTo(70,205)
 	mobware.DpadIndicator_sprite:setZIndex(100)
 	mobware.DpadIndicator_sprite:setIgnoresDrawOffset(true)
 end
