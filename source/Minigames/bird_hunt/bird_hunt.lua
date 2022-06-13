@@ -60,6 +60,9 @@ end
 -- Visual indicator for D-pad input
 mobware.DpadIndicator.start("left","right")
 
+--Initialize sound effects
+gun_shot = playdate.sound.sampleplayer.new("Minigames/bird_hunt/sounds/gun_shot")
+
 -- game states:
 --> start: show controls and show tail-waging dog
 --> play: animate duck, and left or right will freeze the pointer into the pointing animation
@@ -144,6 +147,7 @@ function bird_hunt.update()
     	if dog_pointing == true and duck_dx * dog_direction > 0 then
             playdate.graphics.clear()
             playdate.wait(150) -- Pause 250ms to give the impression of a gun blast
+			gun_shot:play(1)
             duck:changeState("shot")
             gfx.sprite.update() 
             playdate.wait(250) -- Pause 250ms to give the impression of a gun blast
