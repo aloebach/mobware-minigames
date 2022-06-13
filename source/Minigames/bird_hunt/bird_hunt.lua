@@ -28,7 +28,6 @@ grass:setZIndex(3)
 
 -- initialize dog
 	--> I'm going to use Whitebrim's very convenient AnimatedSprite library
-local pointing_dog = gfx.image.new("Minigames/bird_hunt/images/pointing_dog")
 local dog_spritesheet = gfx.imagetable.new("Minigames/bird_hunt/images/pointer")
 local dog = AnimatedSprite.new( dog_spritesheet )
 dog:addState("wag",1,8, {tickStep = 1}, true).asDefault()
@@ -69,7 +68,6 @@ local gamestate = 'start'
 
 -- start timer
 local timer = playdate.timer.new(8000)
---playdate.timer.new(2000, callback)
 
 
 function bird_hunt.update()
@@ -77,40 +75,19 @@ function bird_hunt.update()
 	-- update timer
 	playdate.timer.updateTimers()
 
-	-- Register inputs
-	if dog_pointing == false then
-		if playdate.buttonJustPressed("left") then
-			dog_direction = -1
-            dog.states.wag.flip = 1
-            dog.states.pointing.flip = 1            
-            dog.states.defeated.flip = 1            
-			if gamestate == 'play' then 
-                dog_pointing = true 	              
-                dog:changeState("pointing")
-            end
-            -- remove D-pad indicator
-            if mobware.DpadIndicator then mobware.DpadIndicator.stop() end
-		end
-		if playdate.buttonJustPressed("right") then
-			dog_direction = 1
-            dog.states.wag.flip = 0
-            dog.states.pointing.flip = 0     
-			dog.states.defeated.flip = 0
-			if gamestate == 'play' then 
-				dog_pointing = true 
-			    dog:changeState("pointing")
-			end
-            -- remove D-pad indicator
-            if mobware.DpadIndicator then mobware.DpadIndicator.stop() end
-		end
-	end
-
-
 	if gamestate == 'start' then
-
-		--mobware.print("point!", 165, 100)
-		mobware.print("point at the bird!")
-
+		
+		-- Play introduction animation: (starts pointing right, then point left, right, left, right)
+		if timer.currentTime >= 1600 then
+			dog.states.wag.flip = 0
+		elseif timer.currentTime >= 1200 then
+			dog.states.wag.flip = 1
+		elseif timer.currentTime >= 800 then
+			dog.states.wag.flip = 0
+		elseif timer.currentTime >= 400 then
+			dog.states.wag.flip = 1
+		end
+		
 		-- move gamestate to play after 2 seconds
 		if timer.currentTime >= 2000 then
 			gamestate = 'play'
@@ -119,7 +96,6 @@ function bird_hunt.update()
             if mobware.DpadIndicator then mobware.DpadIndicator.stop() end
 		end
 
-        -- ALTERNATIVELY ADD SHORT INTRO SHOWNING D-PAD PROMPT AND DOG LOOKING BACK AND FORTH
 	end
 
 	if gamestate == 'play' then
@@ -134,6 +110,35 @@ function bird_hunt.update()
             playdate.wait(500)
 			return 0 
 		end
+		
+		-- Register inputs
+		if dog_pointing == false then
+			if playdate.buttonJustPressed("left") then
+				dog_direction = -1
+				dog.states.wag.flip = 1
+				dog.states.pointing.flip = 1            
+				dog.states.defeated.flip = 1            
+				if gamestate == 'play' then 
+					dog_pointing = true 	              
+					dog:changeState("pointing")
+				end
+				-- remove D-pad indicator
+				if mobware.DpadIndicator then mobware.DpadIndicator.stop() end
+			end
+			if playdate.buttonJustPressed("right") then
+				dog_direction = 1
+				dog.states.wag.flip = 0
+				dog.states.pointing.flip = 0     
+				dog.states.defeated.flip = 0
+				if gamestate == 'play' then 
+					dog_pointing = true 
+					dog:changeState("pointing")
+				end
+				-- remove D-pad indicator
+				if mobware.DpadIndicator then mobware.DpadIndicator.stop() end
+			end
+		end
+
 
         -- If dog is pointing at the duck, trigger victory animation
     	if dog_pointing == true and duck_dx * dog_direction > 0 then
@@ -158,17 +163,9 @@ function bird_hunt.update()
 	gfx.sprite.update() -- updates all sprites
 
 	if gamestate == 'start' then
-        mobware.print("point!", 165, 100)
+		mobware.print("point at the bird!", 70, 100)
 	end
 
-end
-
-
-function bird_hunt.credits()
-	--Make sure to freshly load the image, since game:load() will	not be called beforehand
-	credits_sprite = gfx.image.new("Minigames/bird_hunt/images/pointing_dog.png")
-	credits_name = 'Andrew Loebach'
-	return credits_sprite, credits_name
 end
 
 
