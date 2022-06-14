@@ -18,15 +18,15 @@ Once you've cloned the repository, open Minigames/minigame-template and follow t
 
 
 ## Minigame guidelines 
-* Minigames should not last longer 10s or so.
+* Minigames should last no longer than 10 seconds.
 * The minigame should be in its own folder under "Minigames", and the <minigame_name> folder should have the same name as <minigame_name>.lua. 
-* All necessary files such a libraries, music and image files should be contained within the individual minigame's folders, and the games can reference them accordingly. 
-* <minigame_name>.lua must contain <minigame_name>.update(), similar to playdate.update(), which is called once every frame.
+* All necessary files such a libraries, music and image files should be contained within the individual minigame's folder, and the games can reference them accordingly. 
+* <minigame_name>.lua must contain the function <minigame_name>.update(), similar to playdate.update(), which is called once every frame.
 * <minigame_name>.update() should return a 1 if the player won, or a 0 if the player lost.
 * Playdate's additional callback functions are supported, but will be similarly named the <minigame_name> equivalent, such as <minigame_name>.cranked(change, acceleratedChange)
 * credits.json should be in the minigame's root folder and contain the credits for your minigame to be included in the overall game's final credits sequence.
 * credits.gif should be a Gif to be displayed for your minigame in the credits sequence. It should be in the minigame's root folder and be no larger than 180 x 180.
-* the main game will start at 20 fps and slowly increase to 40 fps. Keep this in mind when programming your minigame so that it scales in difficulty accordingly and it's playable both at 20 and 40 fps.
+* The Mobware Minigames framework will begin running at 20 fps and gradually increase to 40 fps as the player progresses. Keep this in mind when programming your minigame so that it scales in difficulty accordingly and is playable both at 20 and 40 fps (and every frame rate in between).
 
 ## License information
 Code for the Mobware Minigames is licensed under Creative Commons Attribution-NonCommercial 4.0 International license.
