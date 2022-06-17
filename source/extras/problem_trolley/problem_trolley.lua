@@ -6,6 +6,8 @@
 
 	Life if full of tough decisions! You control Railway Ralph, who needs to decide where to route the trolley
 	But this means sometimes choosing the lesser of two evils...
+	
+	-TO-DO: Add logic to prevent Mr. Ropers from being too close together
 ]]
 
 -- import support libraries  

@@ -52,6 +52,7 @@ function minigame_cleanup()
 
 	-- set font used in transition screen if I'm displaying text
 	gfx.setFont(mobware_default_font)
+	gfx.setImageDrawMode("copy")
 	
 	-- kill any sounds still playing
 	local sounds = playdate.sound.playingSources()

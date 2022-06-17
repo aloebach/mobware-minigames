@@ -1,0 +1,109 @@
+[
+    {
+        "name": "default",
+        "tickStep": 3,
+        "flip": 0,
+        "loop": true
+    },
+    {
+        "name":"idle_right",
+        "firstFrameIndex": 1,
+        "framesCount": 2
+    },
+    {
+        "name":"idle_left",
+        "firstFrameIndex": 1,
+        "framesCount": 2,
+        "flip": 1
+    },
+    {
+        "name":"right",
+        "firstFrameIndex": 2,
+        "framesCount": 3
+    },
+    {
+        "name":"left",
+        "firstFrameIndex": 2,
+        "framesCount": 3,
+        "flip": 1
+    },
+    {
+        "name":"up_right",
+        "firstFrameIndex": 5,
+        "framesCount": 3
+    },
+    {
+        "name":"up_left",
+        "firstFrameIndex": 5,
+        "framesCount": 3,
+        "flip": 1
+    },
+    {
+        "name":"down_right",
+        "firstFrameIndex": 8,
+        "framesCount": 3
+    },
+    {
+        "name":"down_left",
+        "firstFrameIndex": 8,
+        "framesCount": 3,
+        "flip": 1
+    },
+    {
+        "name":"up(R)",
+        "firstFrameIndex": 11,
+        "framesCount": 3
+    },
+    {
+        "name":"up(L)",
+        "firstFrameIndex": 11,
+        "framesCount": 3,
+        "flip": 1
+    },
+    {
+        "name":"jump_right",
+        "firstFrameIndex": 14,
+        "framesCount": 4
+    },
+    {
+        "name":"jump_left",
+        "firstFrameIndex": 14,
+        "framesCount": 4,
+        "flip": 1
+    },
+    {
+        "name":"crouch",
+        "firstFrameIndex": 18,
+        "framesCount": 1
+    },
+    {
+        "name":"crouch_left",
+        "firstFrameIndex": 18,
+        "framesCount": 1,
+        "flip": 1
+    },
+    {
+        "name":"hit",
+        "firstFrameIndex": 19,
+        "framesCount": 5,
+        "nextAnimation": "dead"
+    },
+    {
+        "name":"dead",
+        "firstFrameIndex": 23,
+        "framesCount": 1
+    },
+    {
+        "name":"left_hit",
+        "firstFrameIndex": 19,
+        "framesCount": 5,
+        "nextAnimation": "left_dead",
+        "flip": 1
+    },
+    {
+        "name":"left_dead",
+        "firstFrameIndex": 23,
+        "framesCount": 1,
+        "flip": 1
+    }    
+]
