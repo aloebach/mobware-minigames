@@ -35,27 +35,14 @@ function Bullet:new()
 	end
 	
 	function self:update()
-		self:moveWithCollisions(self.x + self.dx, self.y + self.dy)
+		--self:moveWithCollisions(self.x + self.dx, self.y + self.dy)
+		self:moveTo(self.x + self.dx, self.y + self.dy)
 		if self.x < 0 then self:remove() end
 		if self.x > 400 then self:remove() end
 		if self.y < 0 then self:remove() end
 		if self.y > 240 then self:remove() end
 	end
 		
-	--[[
-	function self:collisionResponse(other)
-		print("Direct hit!")
-		self:remove()
-		other:shot()
-	end
-
-	function self:shot()
-		-- in case the bullet is hit by another bullet
-		-- do nothing
-		print('bullet hit another bullet!')
-	end
-	--]]
-
 	return self
 
 end

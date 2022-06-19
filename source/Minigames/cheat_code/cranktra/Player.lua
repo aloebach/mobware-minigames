@@ -1,6 +1,5 @@
 --[[
 	Player class for Cranktra
-
 ]]
 
 class('Player').extends(AnimatedSprite)
@@ -28,13 +27,14 @@ function Player:new(spawn_x, spawn_y)
 	self:setStates(animation_states)
     self:changeState("jump_right")
 	self:playAnimation()
+	self:setCollideRect( 10, 12, 16, 16 ) -- collision rectangle when jumping
     self:moveTo(spawn_x, spawn_y)
-    -- replacing line above with move with collisions to test out importing platforms
     --self:moveWithCollisions(spawn_x, spawn_y)
 
 	self.dx = 0
 	self.dy = 0 
 	self.jumping = true
+	self.crouching = false 
 	self.orientation = "right"
 	self.idle = false
 
@@ -56,6 +56,7 @@ function Player:new(spawn_x, spawn_y)
 			if playdate.buttonIsPressed('down') then
 				-- crouch
 				if self.jumping == false then 
+					self.crouching = true
 					-- set low collision rectangle
 					self:setCollideRect( 0, 29, 30, 13 ) -- includes body, and legs
 					
@@ -67,15 +68,25 @@ function Player:new(spawn_x, spawn_y)
 						bullet_angle = math.rad(180)						
 					end
 				end
-
+				
 			elseif playdate.buttonIsPressed('left') then
 				self.dx = -PLAYER_SPEED
+				
 			elseif playdate.buttonIsPressed('right') then
 				self.dx = PLAYER_SPEED
+				
 			end
 			--new_x = math.max( math.min(self.x + self.dx, level.player_max_X ), level.player_min_X)
 			new_x = self.x + self.dx
-
+			
+			-- have crouching player stand up when down is no longer pressed
+			if self.crouching == true and playdate.buttonIsPressed('down') == false then
+				self.crouching = false
+				print('stand back up!')
+				self:calculate_bullet_angle()
+				self:update_animation_state()
+				self:setCollideRect( 10, 10, 12, 32 ) -- includes body, and legs
+			end
 
 			-- if player is above the i'm, player falls downward
 			if self.y < level_floor(self.x,self.y) then
@@ -93,8 +104,8 @@ function Player:new(spawn_x, spawn_y)
 			end
 			new_y = math.min(self.y + self.dy, level_floor(self.x, self.y))
 
-			self:moveTo(new_x, new_y)
-
+			self:moveWithCollisions(new_x, new_y)
+			--self:moveTo(new_x, new_y)
 
 			-- If crank position has changed, then update animation state
 			crank_change, _acceleratedChange = playdate.getCrankChange()
@@ -139,7 +150,6 @@ function Player:new(spawn_x, spawn_y)
 			end
 
 		    bullet_counter += 1
-		    --bullet_counter = bullet_counter + 1
 		    if bullet_counter > bullet_rate then bullet_counter = 0 end
 
 		    self:updateAnimation()
@@ -165,7 +175,6 @@ function Player:new(spawn_x, spawn_y)
 	function self:update_animation_state()
 
 		-- Control aim trajectory with crank
-
 		local angle = playdate.getCrankPosition()
 
 	    -- define collision rectangle for standing player
@@ -238,13 +247,6 @@ function Player:new(spawn_x, spawn_y)
 		end
 
 
-	end
-
-	-- needed to detect when player stops crouching so we can update the animation state
-	function playdate.downButtonUp()
-		self:calculate_bullet_angle()
-		self:update_animation_state()
-		self:setCollideRect( 10, 10, 12, 32 ) -- includes body, and legs
 	end
 
 

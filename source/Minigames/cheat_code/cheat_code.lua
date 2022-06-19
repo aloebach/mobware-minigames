@@ -4,8 +4,6 @@
 
 	cheat code minigame for Mobware Minigames
 	
-	TO-DO: Add explosion sound effect and move title screen to center screen after cranking
-
 ]]
 
 -- Define name for minigame package 
@@ -26,6 +24,8 @@ title_screen_image:addSprite()
 --> Initialize music / sound effects
 local cranktra_theme = playdate.sound.sampleplayer.new('Minigames/cheat_code/sounds/cranktra_title_theme')
 cranktra_theme:play(1) 
+local explosion = playdate.sound.sampleplayer.new('Minigames/cheat_code/sounds/explosion')
+explosion:setVolume(5)
 
 local cranktra_font = gfx.font.new("Minigames/cheat_code/font/Cranktra_M")
 
@@ -123,9 +123,28 @@ function cheat_code.update()
 	elseif gamestate == 'turnCrank' then
 		if playdate.getCrankTicks(1) >= 1 then
 			mobware.crankIndicator.stop()
-			-- play explosion sound effect
-			gamestate = '30_lives'
 			game_timer:remove()
+
+			-- play explosion sound effect
+			explosion:play(1)
+
+			-- move title screen to center and creating flashing text animation by drawing black box over text	
+			title_screen_image:moveTo( 200 , 120 )
+			gfx.sprite.update() 
+			playdate.wait(300)
+			gfx.setColor(gfx.kColorBlack)
+			gfx.fillRect(100, 198, 90, 14) 
+			playdate.wait(300)
+			gfx.clear()
+			gfx.sprite.update() 
+			playdate.wait(300)
+			gfx.fillRect(100, 198, 90, 14) 
+			playdate.wait(300)
+			gfx.clear()
+			gfx.sprite.update() 
+			playdate.wait(500)
+						
+			gamestate = '30_lives'
 			set_black_background()
 			
 			gfx.clear()
@@ -147,8 +166,6 @@ function cheat_code.update()
 		gfx.drawText("JUNGLE", 172, 100)
 		]]
 
-		--gfx.drawText("1P", 20, 20)
-		--gfx.drawText("0", 164, 20)
 		gfx.drawText("1P       0", 20, 20)
 		gfx.drawText("REST 30", 20, 52)
 		
@@ -157,6 +174,10 @@ function cheat_code.update()
 		gfx.drawText("STAGE 1", 144, 128)
 		gfx.drawText("JUNGLE", 144, 160)
 		
+		
+		playdate.wait(2000)	-- Pause 2s before ending the minigame
+
+		-- let the player play Cranktra for a few seconds before moving to victory gamestate and ending the minigame
 		-- load "cranktra" assets:
 		local cranktra_background = gfx.sprite.new(gfx.image.new('Minigames/cheat_code/cranktra/images/cranktra_background'))
 		cranktra_background:moveTo(200, 120)
@@ -165,18 +186,16 @@ function cheat_code.update()
 		-- medals indicating 30 lives
 		lives = gfx.sprite.new()
 		lives:setImage(gfx.image.new("Minigames/cheat_code/cranktra/images/30_lives"))
-		--lives:setIgnoresDrawOffset(true)
 		lives:add()
-		lives:moveTo(20, 20) -- display in upper left corner
 		lives:moveTo(198, 20) -- display in upper left corner
 		
-		playdate.wait(2000)	-- Pause 2s before ending the minigame
-
-		-- let the player play Cranktra for a few seconds before moving to victory gamestate and ending the minigame
-		game_timer = playdate.frameTimer.new( 3 * 20, function() gamestate = "victory" end ) 
-		gamestate = 'cranktra'
+		gfx.sprite.addEmptyCollisionSprite(124, 32 ,368 ,10)
 		playdate.display.setRefreshRate(20)
 		player = Player:new(50, 10)
+
+		-- end minigame after a few seconds of Cranktra
+		gamestate = 'cranktra'
+		game_timer = playdate.frameTimer.new( 3 * 20, function() gamestate = "victory" end ) 
 		
 		
 	elseif gamestate == 'victory' then
@@ -184,9 +203,37 @@ function cheat_code.update()
 
 
 	elseif gamestate == 'defeat' then
-		-- Show the level introduction screen displaying that the player has 3 lives then exit minigame
-	
-		-- TO-DO: Add something more interesting here?
+		
+		--[[
+		-- move title screen to center and display before showing level introduction
+		gfx.sprite.removeAll()
+		title_screen_image:addSprite()
+		title_screen_image:moveTo( 200 , 120 )
+		gfx.sprite.update() 
+		playdate.wait(1500)
+		]]
+
+		-- move title screen to center and creating flashing text animation by drawing black box over text	
+		gfx.sprite.removeAll()
+		title_screen_image:addSprite()
+		title_screen_image:moveTo( 200 , 120 )
+		
+		gfx.sprite.update() 
+		playdate.wait(300)
+		gfx.setColor(gfx.kColorBlack)
+		gfx.fillRect(100, 198, 90, 14) 
+		playdate.wait(300)
+		gfx.clear()
+		gfx.sprite.update() 
+		playdate.wait(300)
+		gfx.fillRect(100, 198, 90, 14) 
+		playdate.wait(300)
+		gfx.clear()
+		gfx.sprite.update() 
+		playdate.wait(500)
+
+
+		-- Show the level introduction screen displaying that the player has 3 lives then exit minigame	
 		set_black_background()
 		gfx.clear()
 		gfx.setFont(cranktra_font)
