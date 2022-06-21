@@ -157,15 +157,6 @@ function cheat_code.update()
 	elseif gamestate == '30_lives' then
 		-- Show the level introduction screen displaying that the player has 30 lives
 
-		-- display image indicating the player has won
-		--[[
-		gfx.drawText("1P       0", 20, 20)
-		gfx.drawText("REST 30", 20, 36)
-		gfx.drawText("HI   20000", 86, 54)
-		gfx.drawText("STAGE 1", 172, 86)
-		gfx.drawText("JUNGLE", 172, 100)
-		]]
-
 		gfx.drawText("1P       0", 20, 20)
 		gfx.drawText("REST 30", 20, 52)
 		
@@ -176,7 +167,7 @@ function cheat_code.update()
 		
 		
 		playdate.wait(2000)	-- Pause 2s before ending the minigame
-
+		
 		-- let the player play Cranktra for a few seconds before moving to victory gamestate and ending the minigame
 		-- load "cranktra" assets:
 		local cranktra_background = gfx.sprite.new(gfx.image.new('Minigames/cheat_code/cranktra/images/cranktra_background'))
@@ -192,6 +183,12 @@ function cheat_code.update()
 		gfx.sprite.addEmptyCollisionSprite(124, 32 ,368 ,10)
 		playdate.display.setRefreshRate(20)
 		player = Player:new(50, 10)
+		
+		-- play stage music
+		cranktra_theme:stop()
+		jungle_music = playdate.sound.sampleplayer.new('Minigames/cheat_code/cranktra/sounds/Contra_Jungle')
+		jungle_music:setVolume(0.4)
+		jungle_music:play(1) 
 
 		-- end minigame after a few seconds of Cranktra
 		gamestate = 'cranktra'
@@ -199,6 +196,7 @@ function cheat_code.update()
 		
 		
 	elseif gamestate == 'victory' then
+		jungle_music:stop()
 		return 1
 
 
