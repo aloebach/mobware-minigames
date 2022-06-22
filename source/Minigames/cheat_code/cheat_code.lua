@@ -34,7 +34,7 @@ local gamestate = 'up1'
 mobware.DpadIndicator.start('up')
 
 -- start timer	 
-local MAX_GAME_TIME = 7 -- define the time at 20 fps that the game will run betfore setting the "defeat" gamestate
+local MAX_GAME_TIME = 7 -- define the time at 20 fps that the game will run before setting the "defeat" gamestate
 local game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) --runs for 6 seconds at 20fps, and 3 seconds at 40fps
 
 
@@ -51,7 +51,9 @@ function cheat_code.update()
 
 	-- player needs to input Konami code in order: up, up, down, down, left, right, left, right, then CRANK
 	if gamestate == 'up1' then
-		mobware.print('enter the codami code!',40,50)
+		--mobware.print('enter the codami code!',40,50)
+		mobware.print('↑ ↑ ↓ ↓ ← → ← → Ⓑ Ⓐ 🎣',35,50)		
+
 		if playdate.buttonJustPressed('up') then
 			-- If player hits the "up" button during this gamestate, move to next gamestate
 			gamestate = 'up2'
@@ -168,7 +170,7 @@ function cheat_code.update()
 		
 		playdate.wait(2000)	-- Pause 2s before ending the minigame
 		
-		-- let the player play Cranktra for a few seconds before moving to victory gamestate and ending the minigame
+		--> let the player play Cranktra for a few seconds before moving to victory gamestate and ending the minigame!
 		-- load "cranktra" assets:
 		local cranktra_background = gfx.sprite.new(gfx.image.new('Minigames/cheat_code/cranktra/images/cranktra_background'))
 		cranktra_background:moveTo(200, 120)
@@ -201,15 +203,6 @@ function cheat_code.update()
 
 
 	elseif gamestate == 'defeat' then
-		
-		--[[
-		-- move title screen to center and display before showing level introduction
-		gfx.sprite.removeAll()
-		title_screen_image:addSprite()
-		title_screen_image:moveTo( 200 , 120 )
-		gfx.sprite.update() 
-		playdate.wait(1500)
-		]]
 
 		-- move title screen to center and creating flashing text animation by drawing black box over text	
 		gfx.sprite.removeAll()
