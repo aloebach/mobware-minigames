@@ -57,12 +57,17 @@ local victory_sound = playdate.sound.sampleplayer.new('Minigames/key_to_success/
 -- set initial gamestate and start prompt for player to hit the B button
 gamestate = 'play'
 mobware.crankIndicator.start()
+mobware.DpadIndicator.start()
+local game_timer = playdate.frameTimer.new( 1 * 20, function() mobware.DpadIndicator.stop() end ) -- removes d-pad indicator after 1 second (at 20fps)
 
 
 function key_to_success.update()
 
 	-- updates all sprites
 	gfx.sprite.update() 
+	
+	-- update timer
+	playdate.frameTimer.updateTimers()
 	
 	if gamestate == 'play' then
 		
