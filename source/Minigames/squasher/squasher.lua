@@ -3,9 +3,7 @@
 	Author: Brandon Dean
 
 	squasher for Mobware Minigames
-	
-	Drew's Updates: 
-		- adding audio & visual touches 
+
 ]]
 
 local squasher = {}
@@ -36,7 +34,8 @@ end
 initialize()
 
 function squasher.update()
-	local dt = 1 / playdate.display.getRefreshRate()
+	--local dt = 1 / playdate.display.getRefreshRate()  -- setting a dynamic dt will run the same amoutn of time regardless of fps
+	local dt = 1 / 20 -- setting a fixed dt will give the player less time as the FPS increases, increasing the difficult as the game goes on
 	gfx.sprite.update()
 
 	if bugSprite.isSquashed then

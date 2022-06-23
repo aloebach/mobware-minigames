@@ -17,16 +17,15 @@ function Target:init()
   self.speed = 7
   self.canMove = true
 
-  --self:setImage(gfx.image.new("Minigames/squasher/images/target"))
   self:setImage(crosshairs)
-  self:setCollideRect(self.width / 3 + 1, self.height / 3 + 1, self.width / 3, self.height / 3)
+  self:setCollideRect(self.width / 4, self.height / 4, self.width / 2 + 1, self.height / 2 + 1)
   self:add()
 end
 
 function Target:squash()
   swat_noise:play(1)
   if #self:overlappingSprites() > 0 then
-    print("squashing")
+    --print("squashing")
     self:overlappingSprites()[1]:splat()
   end
   self:setImage(fly_swatter)
