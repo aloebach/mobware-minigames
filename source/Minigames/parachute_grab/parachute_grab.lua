@@ -4,30 +4,10 @@
 
 	parachute_grab for Mobware Minigames
 
-	feel free to search and replace "parachute_grab" in this code with your minigame's name,
-	rename the file <your_minigame>.lua, and rename the folder to the same name to get started on your own minigame!
 ]]
-
-
---[[ NOTE: The following libraries are already imported in main.lua, so there's no need to define them in the minigame
-import "CoreLibs/object"
-import "CoreLibs/graphics"
-import "CoreLibs/sprites"
-import "CoreLibs/timer"
-import "CoreLibs/frameTimer"
-import "CoreLibs/nineslice"
-import "CoreLibs/ui"
-import "CoreLibs/crank"
-import "CoreLibs/easing"
-]]
-
--- Import any supporting libraries from minigame's folder
-	--> Note that all supporting files should be located under 'Minigames/parachute_grab/''
---import 'Minigames/parachute_grab/lib/AnimatedSprite'
-
 
 -- Define name for minigame package -> should be the same name as the name of the folder and name of <minigame>.lua
-parachute_grab = {}
+local parachute_grab = {}
 
 
 -- all of the code here will be run when the minigame is loaded, so here we'll initialize our graphics and variables:
@@ -44,19 +24,11 @@ local playerSpeedCount = 0
 local playerSpeedDirectionUp = false
 
 local pressedButton = 1
+local AbuttonIndicator_on
 
 local parachutePosition = 0
 local parachuteLeft = true
 
--- initialize background
--- local background = gfx.image.new("Minigames/parachute_grab/images/background")
--- gfx.sprite.setBackgroundDrawingCallback(
--- 	function(x, y, width, height)
--- 		gfx.setClipRect(x, y, width, height)
--- 		background:draw(0,0)
--- 		gfx.clearClipRect()
--- 	end
--- )
 
 -- animation for line sprites
 lines_image_table = gfx.imagetable.new("Minigames/parachute_grab/images/lines")
@@ -122,8 +94,6 @@ player_sprite.frame = 1
 player_sprite.crank_counter = 0
 player_sprite.total_frames = 36
 
---> Initialize music / sound effects
--- local click_noise = playdate.sound.sampleplayer.new('Minigames/parachute_grab/sounds/click')
 
 -- start timer
 MAX_GAME_TIME = 10 -- define the time at 20 fps that the game will run betfore setting the "defeat"gamestate
@@ -250,11 +220,8 @@ function parachute_grab.update()
 	if gamestate == 'hitA' then
 		if playdate.buttonIsPressed('a') then
 
-			-- Stop Indicator (Doesn't seem to work)
-			-- if mobware.AbuttonIndicator then
-			-- 	mobware.AbuttonIndicator.stop()
-			-- end
-
+			mobware.AbuttonIndicator.stop()
+			
 			-- closed hand sprite
 			pressedButton = 2
 			local crank_position = playdate.getCrankPosition() -- Returns the absolute position of the crank (in degrees). Zero is pointing straight up parallel to the device
@@ -267,9 +234,8 @@ function parachute_grab.update()
 
 			-- If player hits the "B" button while the parachute is within reach, change gamestate
 			-- Needs crank position
-			print(frame_num)
-
-
+			--print(frame_num)
+			
 			if (parachuteLeft == true) then
 				-- Left
 				if (frame_num == 16) and (parachutePosition > 30) and (parachutePosition < 40) then
@@ -397,7 +363,10 @@ function parachute_grab.cranked(change, acceleratedChange)
 	-- Once crank is turned, turn off crank indicator
 	if mobware.crankIndicator then
 		mobware.crankIndicator.stop()
-		mobware.AbuttonIndicator.start()
+		if AbuttonIndicator_on ~= true then
+			mobware.AbuttonIndicator.start()
+			AbuttonIndicator_on = true
+		end
 	end
 
 	-- When crank is turned, play clicking noise
