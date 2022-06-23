@@ -4,6 +4,10 @@ local geom <const> = pd.geometry
 
 class("Target").extends(gfx.sprite)
 
+local fly_swatter = gfx.image.new("Minigames/squasher/images/fly_swatter")
+local crosshairs = gfx.image.new("Minigames/squasher/images/target")
+local swat_noise = playdate.sound.sampleplayer.new('Minigames/squasher/sounds/swat')
+
 function Target:init()
   Target.super.init(self)
   self.x = 200
@@ -13,16 +17,20 @@ function Target:init()
   self.speed = 7
   self.canMove = true
 
-  self:setImage(gfx.image.new("Minigames/squasher/images/target"))
+  --self:setImage(gfx.image.new("Minigames/squasher/images/target"))
+  self:setImage(crosshairs)
   self:setCollideRect(self.width / 3 + 1, self.height / 3 + 1, self.width / 3, self.height / 3)
   self:add()
 end
 
 function Target:squash()
+  swat_noise:play(1)
   if #self:overlappingSprites() > 0 then
     print("squashing")
     self:overlappingSprites()[1]:splat()
   end
+  self:setImage(fly_swatter)
+  self:setCenter(0.5, 0.15)
 end
 
 function Target:stop()
@@ -76,6 +84,13 @@ local function userInput(self)
   if a or b then
     self:squash()
   end
+  
+  -- replace fly swatter with crosshairs when A or B button is released
+  if playdate.buttonJustReleased(pd.kButtonA) or playdate.buttonJustReleased(pd.kButtonB) then
+    self:setImage(crosshairs)
+    self:setCenter(0.5, 0.5)
+  end
+  
 end
 
 function Target:update()

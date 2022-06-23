@@ -6,6 +6,8 @@ local geom <const> = pd.geometry
 
 class("Bug").extends(gfx.sprite)
 
+local splat_noise = playdate.sound.sampleplayer.new('Minigames/squasher/sounds/splat')
+
 function Bug:init()
   Bug.super.init(self)
   self.x = math.random(20, 380)
@@ -40,6 +42,7 @@ function Bug:splat()
   self.animation = nil
   self.isSquashed = true
   self:setImage(self.splatImage)
+  splat_noise:play(1)
 end
 
 function Bug:getRotationDegrees()
@@ -97,7 +100,7 @@ end
 
 function Bug:update()
   if not self.isSquashed then
-    print(pd.getElapsedTime(), self.isSquashed)
+    --print(pd.getElapsedTime(), self.isSquashed)
     if self.animation then
       self:setImage(self.animation:image())
     end
