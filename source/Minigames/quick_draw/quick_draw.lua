@@ -6,13 +6,8 @@
 
 ]]
 
--- Import any supporting libraries from minigame's folder
-	--> Note that all supporting files should be located under 'Minigames/quick_draw/''
---import 'Minigames/quick_draw/lib/AnimatedSprite' 
-
-
 -- Define name for minigame package -> should be the same name as the name of the folder and name of <minigame>.lua 
-quick_draw = {}
+local quick_draw = {}
 
 
 -- all of the code here will be run when the minigame is loaded, so here we'll initialize our graphics and variables:
@@ -38,6 +33,7 @@ local buttonMap = {
 }
 
 local buttonValue = math.random(1,#buttonValueMap)
+local wrongButtonValue = (buttonValue % #buttonValueMap ) + 1
 local buttonToPressIndicator = buttonMap[buttonValueMap[buttonValue]]
 
 -- functions
@@ -73,7 +69,7 @@ assert(drawImage)
 
 -- Sprites
 
-cowboyStates = {
+local cowboyStates = {
 	{
 		name = 'cowboy_idle',
 		firstFrameIndex = 1,
@@ -122,7 +118,7 @@ cowboySprite:moveTo(50, 150)
 cowboySprite:setZIndex(2)
 cowboySprite:add()
 
-enemyStates = {
+local enemyStates = {
 	{
 		name = 'enemy_idle',
 		firstFrameIndex = 1,
@@ -177,7 +173,7 @@ backgroundSprite:setCenter(0, 0)
 backgroundSprite:setZIndex(1)
 backgroundSprite:add()
 
-cactusStates = {
+local cactusStates = {
 	{
 		name = 'cactus_idle',
 		firstFrameIndex = 1,
@@ -202,7 +198,7 @@ cactusStates = {
 	}
 }
 
-cactusSprite = AnimatedSprite.new( cactusImageTable )
+local cactusSprite = AnimatedSprite.new( cactusImageTable )
 cactusSprite:setStates(cactusStates)
 cactusSprite:changeState('cactus_idle')
 cactusSprite:moveTo(215, 134)
@@ -215,15 +211,14 @@ function quick_draw.update()
 
 	-- update timer
 	playdate.frameTimer.updateTimers()
-	playdate.timer.updateTimers()
 
 	-- show game start animation
 	if gamestate == 'beginning' then
 		windSound:play()
 
 		if (openingAnimationDone and not flagTimer) then
-			local randomNumber = math.random(1000, 5000)
-			flagTimer = playdate.timer.new(randomNumber, randomNumber, 0)
+			local randomNumber = math.random(20 * 3, 20 * 6) -- between 3s and 6s at 20fps 
+			flagTimer = playdate.frameTimer.new(randomNumber, randomNumber, 0)
 			flagTimer:start()
 			gamestate = 'waiting'
 		end
@@ -238,24 +233,37 @@ function quick_draw.update()
 
 		if (cactusSprite.currentState == 'cactus_done') then
 			gamestate = 'flag-waved'
-			local randomNumber = math.random(400, 600)
-			enemyShootTimer = playdate.timer.new(randomNumber, randomNumber, 0)
+			local randomNumber = math.random(20, 60) -- between 1s and 3s at 20fps 
+			enemyShootTimer = playdate.frameTimer.new(randomNumber, randomNumber, 0)
 			enemyShootTimer:start()
 		end
 	elseif gamestate == 'flag-waved' then
-		-- show a button sprite
+		-- show button prompt sprite
 		if (buttonPromptShowing == false) then
 			buttonToPressIndicator:start(buttonValueMap[buttonValue])
 			buttonPromptShowing = true
 		end
+		
+		-- if wrong button is pressed, play animation and move to defeat gamestate
+		if playdate.buttonIsPressed(buttonValueMap[wrongButtonValue]) then
+			if (buttonPromptShowing) then
+				buttonPromptShowing = false
+				buttonToPressIndicator:stop()
+			end
+			gunfireSound:play()
+			enemySprite:changeState('enemy_play')
+			cowboySprite:changeState('cowboy_dead')
+		
+			gamestate = 'defeat'
+		end
 
-		-- if button pressed, shoot enemy cowboy
+		-- if correct button is pressed, shoot enemy cowboy
 		if (playdate.buttonIsPressed(buttonValueMap[buttonValue])) then
+			-- stop the prompt move to next gamestate
 			buttonToPressIndicator:stop()
 			gunfireSound:play()
 			cowboySprite:changeState('cowboy_play')
 			enemySprite:changeState('enemy_dead')
-			-- If player hits the "A" button during this gamestate then stop the prompt move to next gamestate
 			gamestate = 'victory'
 		end
 
@@ -291,12 +299,8 @@ function quick_draw.update()
 
 		mobware.print("What in tarnation", 90, 70)
 
+		-- wait until animation finishes then exit
 		if (shootingAnimationFinished) then
-
-			-- if player has lost, show images of playdate running out of power 
-			gfx.sprite.update() 
-
-			-- wait another 2 seconds then exit
 			windSound:stop()
 			-- return 0 to indicate that the player has lost and exit the minigame 
 			return 0
@@ -306,10 +310,6 @@ function quick_draw.update()
 
 end
 
--- make sure to add put your name in "credits.json" and add "credits.gif" to the minigame's root folder. 
-	--> These will be used to credit your game during the overarching game's credits sequence!
-
---> Finally, go to main.lua and search for "DEBUG_GAME". You'll want to set this to the name of your minigame so that your minigame gets loaded every turn!
 
 -- Minigame package should return itself
 return quick_draw
