@@ -4,7 +4,6 @@
 
   Author: Andrew Loebach
 ]]
--- TO-DO: add victory fanfare
 
 --minigame needs to initialize its own object
 local TV_Tuner = {}
@@ -20,6 +19,9 @@ local TV_SCREEN_BOTTOM = 171
 TV_WIDTH = TV_SCREEN_RIGHT - TV_SCREEN_LEFT
 TV_HEIGHT = TV_SCREEN_BOTTOM - TV_SCREEN_TOP
 local tv_grid = {}
+
+local GAME_TIME_LIMIT = 8 -- player has 8 seconds at 20fps
+local game_timer = playdate.frameTimer.new( GAME_TIME_LIMIT * 20, function() gamestate = "defeat" end ) --runs for 6 seconds at 20fps, and 3 seconds at 40fps
 
 --initialize animation for polar bear
   --> I'm going to use Whitebrim's very convenient AnimatedSprite library
@@ -61,8 +63,8 @@ thumb_image:setZIndex(4)
 local static_noise = playdate.sound.sampleplayer.new('Minigames/TV_Tuner/sounds/static_noise')
 static_noise:setVolume( 10/ 100 ) 
 static_noise:play(0) -- loop static noise
--- TO-DO: ADD VICTORY THEME
---local victory_theme = playdate.sound.fileplayer.new('Minigames/TV_Tuner/sounds/static_noise')
+local oh_yeah = playdate.sound.fileplayer.new('Minigames/TV_Tuner/sounds/oh_yeah')
+local snap_sound = playdate.sound.fileplayer.new('Minigames/TV_Tuner/sounds/snap')
 
 -- Initialize values for TV antenna
 gfx.setLineWidth( 2 ) -- Set width of TV antennas
@@ -85,12 +87,16 @@ mobware.crankIndicator.start()
 
 
 function TV_Tuner.update()
-  -- Used to calculate dt, since i'm porting this from the Love2D framework
-  local dt = 1 / playdate.display.getRefreshRate()
+  -- Used to calculate dt, since I ported this from the Love2D framework
+  --local dt = 1 / playdate.display.getRefreshRate() --scaling by refresh rate will keep teh same time scale regardless of frame rate
+  local dt = 1 / 20 -- setting a static dt value will mean the player has less time as FPS increases
+
+  -- update timer
+  playdate.frameTimer.updateTimers()
 
   if gamestate == 'play' then
     -- Generate static shown on TV
-    --> noise_frequency will decrease down to 1 (most static) if far away from the receiption angle, and increase when close to reception angle
+    --> noise_frequency will decrease down to 1 (most static) if far away from the reception angle, and increase when close to reception angle
     local noise_frequency = math.floor( math.max( 10 - math.abs((antenna_angle - reception_angle) / 2), 1 ) )
     tv_static:setImage(tv_static.spriteSheet[noise_frequency])
     local random_x_offset = math.random( 0, TV_WIDTH )
@@ -113,7 +119,8 @@ function TV_Tuner.update()
         thumb_image:addSprite()  --clear TV screen of static
         tv_static:remove()
         static_noise:stop()
-        -- TO-DO: PLAY VICTORY MUSIC
+        -- play victory sound
+        oh_yeah:play(1)
       end
     else
       has_reception_counter = 0
@@ -129,26 +136,54 @@ function TV_Tuner.update()
 
   if gamestate == 'defeat' then
     --TO-DO: ADD DEFEAT ANIMATION BEFORE RETURNING 0
-    static_noise:stop()
-    -- antenna snaps and static goes to full strength
-    --> need snapping sound effect and animation
-    return 0
+    
+    -- check one last time if the player is in the sweet spot:
+    if math.abs(antenna_angle - reception_angle) < 2 then -- get reception if you're under 2 degrees from correct angle
+      has_reception_counter = has_reception_counter + dt
+      tv_static:remove() --      :setVisible(flag)
+      
+      --player wins game if they hold reception for 1 second
+      if has_reception_counter >= 1 then 
+        gamestate = 'victory'
+        victory_time = 0 
+        game_counter = 0 --reset game counter so we can use it for the victory animation
+        thumb_image:addSprite()  --clear TV screen of static
+        tv_static:remove()
+        static_noise:stop()
+        -- play victory sound
+        oh_yeah:play(1)
+      end
+    else
+      -- If time runs out and antenna isn't in the sweet spot, then the player loses    
+      snap_sound:play(1)
+      static_noise:stop()
+      --static_noise:setVolume( 10 / 100 ) -- set static to maximum volume 
+      
+      --local game_timer = playdate.frameTimer.new( 20, function() gamestate = "exit" end ) --runs for 6 seconds at 20fps, and 3 seconds at 40fps
+      
+      return 0
+    end
   end
 
   --increase game counter
   game_counter = game_counter + dt
-  if game_counter >= 8 then
-    gamestate = 'defeat'
-  end 
 
-
--- Rendering code
-
+  -- Rendering code
   gfx.sprite.update() -- updates all sprites
 
   --draw antennas
   gfx.drawLine( 207, 50, 165, 10)   --left antenna
   gfx.drawLine( 207, 50, 207 + antenna_x, 50 - antenna_y)  --right antenna
+
+--[[
+  -- draw broken antenna after time expires:
+  if gamestate ~= "defeat" then 
+    antenna_x =  ANTENNA_LENGTH/2 * math.cos(math.rad(antenna_angle)) --updates antenna's x value, based on angle
+    antenna_y =  ANTENNA_LENGTH/2 * math.sin(math.rad(antenna_angle)) --updates antenna's y value, based on angle
+    gfx.drawLine( 207, 50, 207 + antenna_x, 50 - antenna_y)  -- half of broken right antenna 
+    gfx.drawLine( 207 + antenna_x, 50 - antenna_y, 207 + 2*antenna_x, 50 + antenna_y )  --other half of broken right antenna 
+  end
+--]]
 
   --print instructions to player
   if game_counter < 2 and gamestate == "play" then
