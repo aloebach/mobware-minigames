@@ -7,7 +7,7 @@
 ]]
 
 -- Define name for minigame package
-a_sketchy_etcher = {}
+local a_sketchy_etcher = {}
 
 local gfx <const> = playdate.graphics
 
@@ -44,7 +44,7 @@ local previous_y = 1
 local previous_z = 0
 local SHAKE_THRESHOLD = 0.2
 local WINNING_SCORE = 80
-local MAX_GAME_TIME = 8 -- maxiumum time (in seconds) minigame should run
+local MAX_GAME_TIME = 8 -- maximum time (in seconds) minigame should run
 
 -- start timer	 
 game_timer = playdate.frameTimer.new(MAX_GAME_TIME * 20, function() gamestate = "defeat" end) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
@@ -62,7 +62,6 @@ function a_sketchy_etcher.update()
 	if gamestate == "play" then
 		-- read values from accelerometer
 		local x,y,z = playdate.readAccelerometer()
-		--print(x,y,z) -- for testing/debugging
 
 		-- if device has been sufficiently shaken, then call "shake" function
 		if math.abs(x - previous_x) > SHAKE_THRESHOLD then shake() end
@@ -75,6 +74,7 @@ function a_sketchy_etcher.update()
 	elseif gamestate == "victory" then
 		-- once victory animation is completed return 1 to end the minigame
 		if animation_finished then
+			playdate.wait(500)
 			return 1
 		end
 
@@ -109,8 +109,9 @@ function shake()
 	-- win condition: player shakes enough to erase the image
 	if shake_counter >= WINNING_SCORE then
 		-- load game-winning animation
-		thumbs_up_gif = gfx.imagetable.new("Minigames/a_sketchy_etcher/images/thumbs_up")
-		thumbs_up = AnimatedSprite.new( thumbs_up_gif )
+		playdate.display.setRefreshRate( 40 )
+		local thumbs_up_gif = gfx.imagetable.new("Minigames/a_sketchy_etcher/images/thumbs_up")
+		local thumbs_up = AnimatedSprite.new( thumbs_up_gif )
 		thumbs_up:addState("animate", nil, nil, {tickStep = 1, loop = false, onAnimationEndEvent = function() animation_finished = true end}, true)
 			--> In the animated sprite above I included a function that will set animation_finished = true once the animation completes
 		thumbs_up:moveTo(200, 120)
