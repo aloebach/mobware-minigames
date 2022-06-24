@@ -63,21 +63,24 @@ local function userInput(self)
   local a = pd.buttonJustPressed(pd.kButtonA)
   local b = pd.buttonJustPressed(pd.kButtonB)
 
-  if left then
-    self:moveBy(-self.speed, 0)
-  end
-  if right then
-    self:moveBy(self.speed, 0)
-  end
-  if up then
-    self:moveBy(0, -self.speed)
-  end
-  if down then
-    self:moveBy(0, self.speed)
-  end
-
-  if left or right or up or down then
-    keepInBounds(self)
+  -- only allow player to move the target if A or B aren't held down
+  if playdate.buttonIsPressed(pd.kButtonA) == false and playdate.buttonIsPressed(pd.kButtonB) == false then
+    if left then
+      self:moveBy(-self.speed, 0)
+    end
+    if right then
+      self:moveBy(self.speed, 0)
+    end
+    if up then
+      self:moveBy(0, -self.speed)
+    end
+    if down then
+      self:moveBy(0, self.speed)
+    end
+  
+    if left or right or up or down then
+      keepInBounds(self)
+    end
   end
 
   if a or b then
