@@ -3,21 +3,20 @@
 	Word_L minigame for Mobware Minigames
 
 	Author: Drew Loebach
-	
-	TO-DO: Animate word to show that the player has won in victory state
 ]]
 
--- Define name for minigame package -> should be the same name as the name of the folder and name of <minigame>.lua 
+-- Define name for minigame package
 local Word_L = {}
 
--- all of the code here will be run when the minigame is loaded, so here we'll initialize our graphics and variables:
+import 'Outline'
+import 'Dither'
+
 local gfx <const> = playdate.graphics
 
 -- set initial gamestate
 local gamestate = 'play'
 local TARGET_WORD = 'PANIC'
 local word = string.sub(TARGET_WORD,1,3) -- start with the first 3 letters of the word
-print(word)
 
 -- Initialize graphics
 local background = gfx.sprite.new()
@@ -53,6 +52,16 @@ function Word_L.update()
 
 	-- display letters entered by the player	
 	gfx.setFont(mobware_font_L) 
+	-- character X = 38 * word - 8
+	if #word > 0 then
+		gfx.drawTextAligned( string.sub(word,1,1), 30, 119, kTextAlignment.center)
+	end
+	if #word > 1 then
+		gfx.drawTextAligned( string.sub(word,2,2), 68, 119, kTextAlignment.center)
+	end
+	if #word > 2 then
+		gfx.drawTextAligned( string.sub(word,3,3), 106, 119, kTextAlignment.center)
+	end
 	if #word > 3 then
 		gfx.drawTextAligned( string.sub(word,4,4), 144, 119, kTextAlignment.center)
 	end
@@ -75,6 +84,41 @@ function Word_L.update()
 		game_timer:remove()
 		playdate.keyboard.hide()
 		cursor:remove()
+		
+		-- score word
+		local _y = 133
+		for i = 1, #word do
+			--check if letter is correct and mark accordingly
+			if string.sub(word,i,i) == string.sub(TARGET_WORD,i,i) then
+				print("letter",i,"is a match (", string.sub(word,i,i),")")
+				outline = Outline:new(38 * i - 7,_y)
+			elseif string.find(TARGET_WORD, string.sub(word,i,i) ) then
+				print("letter",i,"found in target word")
+				dither_block = Dither:new(38 * i - 7,_y, "thin")
+			else  -- if no match at all then color with thick dithering
+				print("letter",i,"not found in word")
+				dither_block = Dither:new(38 * i - 7,_y, "thick")
+			end
+			
+			-- render letters and outlines
+			gfx.sprite.update() 
+			if #word > 0 then
+				gfx.drawTextAligned( string.sub(word,1,1), 30, 119, kTextAlignment.center)
+			end
+			if #word > 1 then
+				gfx.drawTextAligned( string.sub(word,2,2), 68, 119, kTextAlignment.center)
+			end
+			if #word > 2 then
+				gfx.drawTextAligned( string.sub(word,3,3), 106, 119, kTextAlignment.center)
+			end
+			if #word > 3 then
+				gfx.drawTextAligned( string.sub(word,4,4), 144, 119, kTextAlignment.center)
+			end
+			if #word > 4 then
+				gfx.drawTextAligned( string.sub(word,5,5), 182, 119, kTextAlignment.center)
+			end
+			playdate.wait(300)
+		end
 		
 		if word == TARGET_WORD then
 			gamestate = 'victory'
@@ -105,15 +149,6 @@ function Word_L.update()
 		return 0 -- return 0 to indicate that the player has lost and exit the minigame 
 
 	end
-	
-	-- rendering code
-	--[[
-	gfx.setFont(mobware_font_L)
-	gfx.drawText("W O R D L", 20, 20)
-	gfx.drawText("C H A I N", 20, 60)
-	gfx.drawText("R A P I D", 20, 100)
-	gfx.drawText("P A N I", 20, 140)
-	]]
 	
 end
 
