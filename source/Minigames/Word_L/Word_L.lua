@@ -7,22 +7,17 @@
 	TO-DO: Animate word to show that the player has won in victory state
 ]]
 
-
 -- Define name for minigame package -> should be the same name as the name of the folder and name of <minigame>.lua 
 local Word_L = {}
 
 -- all of the code here will be run when the minigame is loaded, so here we'll initialize our graphics and variables:
 local gfx <const> = playdate.graphics
 
--- TO-DO: ADD VICTORY THEME?
---local victory_theme = playdate.sound.fileplayer.new('Minigames/Word_L/sounds/<filename>')
-
 -- set initial gamestate
 local gamestate = 'play'
-local BASE_WORD = 'PAN'
 local TARGET_WORD = 'PANIC'
-local word = BASE_WORD
-print(#word)
+local word = string.sub(TARGET_WORD,1,3) -- start with the first 3 letters of the word
+print(word)
 
 -- Initialize graphics
 local background = gfx.sprite.new()
@@ -40,12 +35,13 @@ local MAX_GAME_TIME = 10 -- define the time at 20 fps that the game will run bet
 local game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "text_entered" end ) 
 
 -- display keyboard for letter input
-playdate.keyboard.show()
+playdate.keyboard.show( string.sub(TARGET_WORD,1,3) )
 function playdate.keyboard.textChangedCallback()
-	word = BASE_WORD .. string.upper(playdate.keyboard.text)
+	word = string.upper(playdate.keyboard.text)
 	print(word)
 	if #word >= 5 then gamestate = 'text_entered' end
 end
+
 
 function Word_L.update()
 
@@ -64,14 +60,13 @@ function Word_L.update()
 		gfx.drawTextAligned( string.sub(word,5,5), 182, 119, kTextAlignment.center)
 	end
 		
-
 	-- In the first stage of the minigame
 	if gamestate == 'play' then
 		-- display rectangle highlighting the square for the current letter
 		cursor:moveTo(38 * (#word + 1) - 7, 133)  -- move cursor to highlight current space
 		
 		if #word > 4 then
-			-- all leters have been entered, move to next gamestate
+			-- all letters have been entered, move to next gamestate
 			gamestate =  "text_entered"
 		end
 		
@@ -92,7 +87,6 @@ function Word_L.update()
 
 		-- display text indicating the player has won
 		mobware.print("good job!",222, 120)
-		
 		playdate.wait(2500)	-- Pause 2.5s before ending the minigame
 
 		-- returning 1 will end the game and indicate the the player has won the minigame
@@ -104,14 +98,11 @@ function Word_L.update()
 		-- ridicule the player and inform them that they have lost
 		mobware.print("you lose", 222, 60)
 		gfx.setFont(mobware_font_M) 
-		--gfx.drawText('"PANI'..text_letter..'"\n ... really!?', 210, 123)
 		gfx.drawText(word..'\n ... really!?', 210, 123)
 		
-		-- wait another 2.5 seconds then exit
-		playdate.wait(2500)	-- Pause 2s before ending the minigame
-
-		-- return 0 to indicate that the player has lost and exit the minigame 
-		return 0
+		-- wait another 3 seconds then exit
+		playdate.wait(3000)	-- Pause 2s before ending the minigame
+		return 0 -- return 0 to indicate that the player has lost and exit the minigame 
 
 	end
 	
@@ -124,16 +115,6 @@ function Word_L.update()
 	gfx.drawText("P A N I", 20, 140)
 	]]
 	
-end
-
-
-function print_centered(text, x, y)
-	-- prints text, but centered at x, y
-	local text_width, text_height = gfx.getTextSize(text)
-	local centered_x = (400 - text_width) / 2 -- this should put the minigame name in the center of the screen
-	local centered_y = (240 - text_height) / 2 -- this should put the minigame name in the center of the screen
-	local draw_x = x or centered_x
-	local draw_y = y or centered_y
 end
 
 
