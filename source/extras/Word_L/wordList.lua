@@ -28,5 +28,7 @@ wordList = {
 	'extra',
 	'words',
 	'level',
-	'group'
+	'group',
+	'patch',
+	'pause'
 }
