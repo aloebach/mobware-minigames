@@ -49,6 +49,7 @@ function minigame_cleanup()
 	gfx.sprite.removeAll()
 	gfx.setDrawOffset(0, 0)
 	playdate.display.setScale(1)
+	playdate.keyboard.hide()
 
 	-- set font used in transition screen if I'm displaying text
 	gfx.setFont(mobware_default_font)

@@ -38,8 +38,8 @@ playdate.keyboard.show( string.sub(TARGET_WORD,1,3) )
 function playdate.keyboard.textChangedCallback()
 	word = string.upper(playdate.keyboard.text)
 	print(word)
-	if #word >= 5 then gamestate = 'text_entered' end
 end
+
 
 
 function Word_L.update()
@@ -53,24 +53,20 @@ function Word_L.update()
 	-- display letters entered by the player	
 	gfx.setFont(mobware_font_L) 
 	-- character X = 38 * word - 8
-	if #word > 0 then
-		gfx.drawTextAligned( string.sub(word,1,1), 30, 119, kTextAlignment.center)
-	end
-	if #word > 1 then
-		gfx.drawTextAligned( string.sub(word,2,2), 68, 119, kTextAlignment.center)
-	end
-	if #word > 2 then
-		gfx.drawTextAligned( string.sub(word,3,3), 106, 119, kTextAlignment.center)
-	end
-	if #word > 3 then
-		gfx.drawTextAligned( string.sub(word,4,4), 144, 119, kTextAlignment.center)
-	end
-	if #word > 4 then
-		gfx.drawTextAligned( string.sub(word,5,5), 182, 119, kTextAlignment.center)
-	end
+	if #word > 0 then gfx.drawTextAligned( string.sub(word,1,1), 30, 119, kTextAlignment.center) end
+	if #word > 1 then gfx.drawTextAligned( string.sub(word,2,2), 68, 119, kTextAlignment.center) end
+	if #word > 2 then gfx.drawTextAligned( string.sub(word,3,3), 106, 119, kTextAlignment.center) end
+	if #word > 3 then gfx.drawTextAligned( string.sub(word,4,4), 144, 119, kTextAlignment.center) end
+	if #word > 4 then gfx.drawTextAligned( string.sub(word,5,5), 182, 119, kTextAlignment.center) end
 		
 	-- In the first stage of the minigame
 	if gamestate == 'play' then
+
+		if not playdate.keyboard.isVisible() then
+			print("show keyboard!")
+			playdate.keyboard.show()
+		end
+		
 		-- display rectangle highlighting the square for the current letter
 		cursor:moveTo(38 * (#word + 1) - 7, 133)  -- move cursor to highlight current space
 		

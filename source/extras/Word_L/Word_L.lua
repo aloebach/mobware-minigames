@@ -1,18 +1,15 @@
-
 --[[
 	Word_L bonus game for Mobware Minigames!
 
 	Author: Drew Loebach
-	
-	TO-DO: Detect if a letter is used multiple times
-	TO-DO: Add word list so only real words can be entered
-	TO-DO: Add different insults if the playe rdoesn't get the word?
+
 ]]
 
 -- Define name for minigame package
 local Word_L = {}
 
 import 'wordList'
+import '5_letter_word_dictionary'
 
 local gfx <const> = playdate.graphics
 
@@ -20,12 +17,26 @@ local gfx <const> = playdate.graphics
 local gamestate = 'play'
 
 -- choose word from list
---local DEBUG_WORD = 'PANIC' -- you can set this variable to expressly choose which word to use
 local _word_index = math.random(#wordList)
-local TARGET_WORD = DEBUG_WORD or string.upper(wordList[_word_index])
+local target_word = DEBUG_WORD or string.upper(wordList[_word_index])
+
+-- generating dictionary from entries in 5_letter_word_dictionary.lua 
+local dictionary = {}
+for _, i in ipairs(wordDict) do
+	dictionary[i] = true
+end
+-- check if selected word is in the dictionary
+if dictionary["target_word"] then
+	print("selected word is in in dictionary")
+else
+	print("WARNING! Selected word is NOT in dictionary!")
+end
 
 local word = ''
 local row = 1
+
+--Initialize sound effects
+nope_sound_effect = playdate.sound.sampleplayer.new("extras/Word_L/sounds/nope")
 
 -- Initialize graphics
 local background = gfx.sprite.new()
@@ -37,6 +48,7 @@ local outline_image = gfx.image.new("extras/Word_L/images/correct_letter_indicat
 local thick_dither = gfx.image.new("extras/Word_L/images/thick_dither_32x34")
 local thin_dither = gfx.image.new("extras/Word_L/images/thin_dither_32x34")
 
+-- this is the sprite we'll draw our letters and outlines to so we can display and manage them easily
 local letters_on_screen = gfx.sprite.new( gfx.image.new(400,240) )
 letters_on_screen:moveTo(200, 120)
 letters_on_screen:add()
@@ -55,8 +67,8 @@ local text_y = 40 * row - 1
 playdate.keyboard.show()
 function playdate.keyboard.textChangedCallback()
 	word = string.upper(playdate.keyboard.text)
-	print(word)
-	if #word >= 5 then gamestate = 'text_entered' end
+	--print(word)
+	--if #word >= 5 then gamestate = 'text_entered' end
 end
 
 
@@ -64,7 +76,7 @@ function initialize_wordL()
 	-- initialize new game here
 	gamestate = 'play'
 	_word_index = math.random(#wordList)
-	TARGET_WORD = string.upper(wordList[_word_index])
+	target_word = string.upper(wordList[_word_index])
 
 	letters_on_screen:setImage( gfx.image.new(400,240) )
 	
@@ -103,31 +115,47 @@ function Word_L.update()
 			print("show keyboard!")
 			playdate.keyboard.show()
 		end
+
+		if #word > 4 then
+			-- all letters have been entered, move to next gamestate
+			
+			-- check if word is a valid entry in the dictionary
+			if dictionary[word] then
+				-- if word is in the dictionary move to "text_entered" state
+				print(word,"found in dictionary")
+				gamestate =  "text_entered"
+			else
+				-- if word is NOT in the dictionary then we do a dramatic shake effect and erase the last letter
+				nope_sound_effect:play(1)
+				print(word,"not found in dictionary")
+				playdate.display.setOffset(0, 5)
+				playdate.wait(60)
+				playdate.display.setOffset(0, -5)
+				playdate.wait(60)
+				playdate.display.setOffset(0,0)
+				
+				playdate.keyboard.text = string.sub(word,1,4)
+				word = string.sub(word,1,4)
+			end
+			
+		end
 		
 		-- display rectangle highlighting the square for the current letter
 		cursor:moveTo(38 * (#word + 1) - 7, cursor_y)  -- move cursor to highlight current space
-		
-		if #word > 4 then
-			-- all letters have been entered, move to next gamestate
-			gamestate =  "text_entered"
-		end
 		
 		
 	elseif gamestate == 'text_entered' then
 		playdate.keyboard.hide()
 		cursor:remove()
 		
-		-- check if word is valid
-		-- TO-DO: add logic here to compare word against list!
-		
 		-- score word
 		local _y = cursor_y
 		for i = 1, #word do
 			--check if letter is correct and mark accordingly
-			if string.sub(word,i,i) == string.sub(TARGET_WORD,i,i) then
+			if string.sub(word,i,i) == string.sub(target_word,i,i) then
 				print("letter",i,"is a match (", string.sub(word,i,i),")")
 				draw_outline(38 * i - 7,_y)
-			elseif string.find(TARGET_WORD, string.sub(word,i,i) ) then
+			elseif string.find(target_word, string.sub(word,i,i) ) then
 				print("letter",i,"found in target word")
 				draw_dither(38 * i - 7,_y, "thin")
 			else  -- if no match at all then color with thick dithering
@@ -142,7 +170,7 @@ function Word_L.update()
 			playdate.wait(300)
 		end
 		
-		if word == TARGET_WORD then
+		if word == target_word then
 			gamestate = 'victory'
 			
 		elseif row < 5 then -- game is still going, move on to the next row
@@ -165,7 +193,6 @@ function Word_L.update()
 
 		-- display text indicating the player has won
 		mobware.print("good job!",222, 120)
-		--playdate.wait(300)	-- Pause briefly
 		
 		if playdate.buttonJustPressed("A") then		
 			initialize_wordL()
@@ -178,10 +205,7 @@ function Word_L.update()
 		mobware.print("you lose", 222, 60)
 		gfx.setFont(mobware_font_M) 
 		gfx.drawText(word..'\n ... really!?', 210, 123)
-		gfx.drawText('-> '..TARGET_WORD, 210, 202)
-		
-		-- wait another 3 seconds then exit
-		--playdate.wait(300)	-- Pause briefly
+		gfx.drawText('-> '..target_word, 210, 202)
 		
 		if playdate.buttonJustPressed("A") then		
 			initialize_wordL()
@@ -193,7 +217,7 @@ end
 
 
 function draw_letters_to_sprite()
-
+	-- draw the row's letters to the "letters_on_screen" sprite
 	local canvas = letters_on_screen:getImage()
 	gfx.lockFocus(canvas)
 		gfx.drawTextAligned( string.sub(word,1,1), 30, text_y, kTextAlignment.center )
@@ -203,7 +227,6 @@ function draw_letters_to_sprite()
 		gfx.drawTextAligned( string.sub(word,5,5), 182, text_y, kTextAlignment.center )
 	gfx.unlockFocus()
 	letters_on_screen:setImage(canvas)
-
 end
 
 
