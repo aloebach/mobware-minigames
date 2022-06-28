@@ -50,5 +50,6 @@ wordList = {
 	'score',
 	'credit',
 	'bonus',
-	'fight'
+	'fight',
+	'story'
 }

@@ -26,7 +26,7 @@ for _, i in ipairs(wordDict) do
 	dictionary[i] = true
 end
 -- check if selected word is in the dictionary
-if dictionary["target_word"] then
+if dictionary[target_word] then
 	print("selected word is in in dictionary")
 else
 	print("WARNING! Selected word is NOT in dictionary!")
@@ -87,6 +87,7 @@ function initialize_wordL()
 	gamestate = 'play'
 	cursor = AnimatedSprite.new( cursor_spritesheet )
 	cursor:addState("blink",1,2, {tickStep = 5, loop = true}, true)
+	cursor:moveTo(38 * (#word + 1) - 7, cursor_y)  -- move cursor to highlight current space
 	playdate.keyboard.text = ''
 	playdate.keyboard.show()
 
@@ -181,6 +182,7 @@ function Word_L.update()
 			gamestate = 'play'
 			cursor = AnimatedSprite.new( cursor_spritesheet )
 			cursor:addState("blink",1,2, {tickStep = 5, loop = true}, true)
+			cursor:moveTo(38 * (#word + 1) - 7, cursor_y)  -- move cursor to highlight current space
 			playdate.keyboard.text = ''
 			playdate.keyboard.show()
 			
