@@ -27,7 +27,7 @@ for _, i in ipairs(wordDict) do
 end
 -- check if selected word is in the dictionary
 if dictionary[target_word] then
-	print("selected word is in in dictionary")
+	print("selected word found in the dictionary")
 else
 	print("WARNING! Selected word is NOT in dictionary!")
 end
@@ -123,10 +123,10 @@ function Word_L.update()
 			-- check if word is a valid entry in the dictionary
 			if dictionary[word] then
 				-- if word is in the dictionary move to "text_entered" state
-				print(word,"found in dictionary")
+				--print(word,"found in dictionary")
 				gamestate =  "text_entered"
 			else
-				-- if word is NOT in the dictionary then we do a dramatic shake effect and erase the last letter
+				-- if word is NOT in the dictionary then we do a dramatic shake effect and erase the last letter entered
 				nope_sound_effect:play(1)
 				print(word,"not found in dictionary")
 				playdate.display.setOffset(0, 5)
