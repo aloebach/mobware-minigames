@@ -18,7 +18,9 @@ function mobware.crankIndicator.start()
 end
 
 function mobware.crankIndicator.stop()
-	mobware.crankIndicator_sprite:remove()
+	if mobware.crankIndicator_sprite then
+		mobware.crankIndicator_sprite:remove()
+	end
 end
 
 
@@ -34,7 +36,9 @@ function mobware.AbuttonIndicator.start()
 end
 
 function mobware.AbuttonIndicator.stop()
-	mobware.AbuttonIndicator_sprite:remove()
+	if mobware.AbuttonIndicator_sprite then
+		mobware.AbuttonIndicator_sprite:remove()
+	end
 end
 
 
@@ -50,7 +54,9 @@ function mobware.BbuttonIndicator.start()
 end
 
 function mobware.BbuttonIndicator.stop()
-	mobware.BbuttonIndicator_sprite:remove()
+	if mobware.BbuttonIndicator_sprite then
+		mobware.BbuttonIndicator_sprite:remove()
+	end
 end
 
 
@@ -79,7 +85,9 @@ function mobware.DpadIndicator.start(direction1, direction2)
 end
 
 function mobware.DpadIndicator.stop()
-	mobware.DpadIndicator_sprite:remove()
+	if mobware.DpadIndicator_sprite then
+		mobware.DpadIndicator_sprite:remove()
+	end
 end
 
 
@@ -115,7 +123,9 @@ function mobware.AccelerometerIndicator.start(direction1, direction2)
 end
 
 function mobware.AccelerometerIndicator.stop()
-	mobware.AccelerometerIndicator_sprite:remove()
+	if mobware.AccelerometerIndicator_sprite then
+		mobware.AccelerometerIndicator_sprite:remove()
+	end
 end
 
 
@@ -132,7 +142,9 @@ function mobware.MicIndicator.start()
 end
 
 function mobware.MicIndicator.stop()
-	mobware.MicIndicator_sprite:remove()
+	if mobware.MicIndicator_sprite then
+		mobware.MicIndicator_sprite:remove()
+	end
 end
 
 
@@ -148,7 +160,9 @@ function mobware.MenuIndicator.start()
 end
 
 function mobware.MenuIndicator.stop()
-	mobware.MenuIndicator_sprite:remove()
+	if mobware.MicIndicator_sprite then
+		mobware.MenuIndicator_sprite:remove()
+	end
 end
 
 
