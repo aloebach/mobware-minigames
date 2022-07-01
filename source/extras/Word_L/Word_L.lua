@@ -13,6 +13,8 @@ import '5_letter_word_dictionary'
 
 local gfx <const> = playdate.graphics
 
+playdate.display.setRefreshRate( 20 )
+
 -- set initial gamestate
 local gamestate = 'play'
 
