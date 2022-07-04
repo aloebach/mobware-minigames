@@ -5,16 +5,13 @@
 	loebach@gmail.com
 
 -- This main program will reference the Minigames and run the minigames by calling their functions to execute the minigame's logic
-
-known bugs:
-- Game hangs if you change the gamestate via the menu during playdate.wait()
-
---> maybe call callback functions via "pcall" to avoid corner case that they're called while a game is being loaded/unloaded
+-- TO-DO: Fix bug where minigame can reset sporadically
 ]]
 
 -- variables for use with testing/debugging:
--- DEBUG_GAME = "apple_chopper" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
--- SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
+--DEBUG_GAME = "minigame_template" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+--SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
+--UNLOCK_ALL_EXTRAS = true -- set this to true to have all extras unlocked!
 
 -- Import CoreLibs
 import "CoreLibs/object"
@@ -26,6 +23,7 @@ import "CoreLibs/nineslice"
 import "CoreLibs/ui"
 import "CoreLibs/crank"
 import "CoreLibs/easing"
+import "CoreLibs/keyboard"
 
 -- Import supporting libraries
 import 'lib/AnimatedSprite' --used to generate animations from spritesheet
@@ -38,12 +36,18 @@ local gfx <const> = playdate.graphics
 --Define local variables to be used outside of the minigames
 local GameState
 local minigame
+local unlockable_game
+local is_in_bonus_game_list
 local score
 local lives
 local GAME_WINNING_SCORE = 20 --score that, when reached, will trigger the ending and show credits
+local threshold_for_unlocking_bonus_game = 1 --10  -- minimum score player has to have before being offered unlockables
+local chance_of_unlocking_bonus_game = 100  -- percentage chance player will be offered an unlockable after completing minigame
 
 -- generate table of minigames from directories in "Minigames" folder
 minigame_list = generate_minigame_list("Minigames/")
+-- generate list of bonus games
+local bonus_game_list, unlocked_bonus_games = generate_bonusgame_list("extras/")
 
 -- seed the RNG so that calls to random are always random
 local s, ms = playdate.getSecondsSinceEpoch()
@@ -194,11 +198,14 @@ function playdate.update()
 			pd_sprite:moveTo(250, 120)
 			pd_sprite:add()
 						
-			-- generate list of bonus games
-			bonus_game_list = generate_minigame_list("extras/")
-			--> TO-DO: compare bonus game list to list of unlocked bonus games from memory?
+			
+			-- TO-DO: compare bonus game list to list of unlocked bonus games from memory
+				--> we can simply check if the game is in the list of unlocked extras?
+				--> instead of checking bonus_game_list, we simply iterate over list_of_unlocked_extras
 			bonus_game_number = 1
 			menu_initialized = 1
+			
+			
 			
 			-- add launcher card for sprite
 			launcher_sprite = gfx.sprite.new(  gfx.image.new('extras/' .. bonus_game_list[bonus_game_number] .. '/card') )
@@ -214,7 +221,7 @@ function playdate.update()
 	elseif GameState == 'initialize' then 
 		-- Take a random game from our list of games, or take DEBUG_GAME if defined
 		local game_num = math.random(#minigame_list)
-		local minigame_name = DEBUG_GAME or minigame_list[game_num]
+		minigame_name = DEBUG_GAME or minigame_list[game_num]
 		local minigame_path = 'Minigames/' .. minigame_name .. '/' .. minigame_name -- build minigame file path 
 				
 		-- Clean up graphical environment for minigame
@@ -243,7 +250,17 @@ function playdate.update()
 			elseif game_result == 1 then
 				score = score + 1
 				-- TO-DO: ADD MINIGAME_WON GAMESTATE with TRIUMPHANT SOUND EFFECT AND LOGIC FOR HAPPY ANIMATION!
-
+				
+				-- logic for randomly offering for the player to buy bonus content if they complete a minigame above a certain difficulty level:
+				if score >= threshold_for_unlocking_bonus_game then
+					local random_num = math.random(100)
+					if random_num <= chance_of_unlocking_bonus_game then
+						print('congratulations! You have been offered unlockable content!')
+						unlockable_game = minigame_name
+						GameState = 'offer_unlockable'
+					end
+				end
+				
 				--if the player's score is sufficiently high, show credits
 				if score == GAME_WINNING_SCORE then GameState = 'credits' end
 
@@ -303,6 +320,48 @@ function playdate.update()
 		mobware.print("lives: " .. lives, 15, 65)
 		gfx.setFont(mobware_default_font) -- reset font to default
 		
+		
+	elseif GameState == 'offer_unlockable' then
+		-- here the player is given the option to purchase unlockable content with their in-game currency
+		
+		-- TO-DO: instead of doing this iterate over unlocked_bonus_games list?
+		-- generating easily referencable dictionary of unlocked games
+		-- TO-DO: move this to utilities? 
+		if is_in_bonus_game_list then
+			print('is_in_bonus_game_list already generated')
+		else
+			-- create a set so that we can easily 
+			print('is_in_bonus_game_list not found. Creating...')
+			is_in_bonus_game_list = {}
+			for _, i in ipairs(bonus_game_list) do
+				is_in_bonus_game_list[i] = true
+			end
+		end
+		
+		-- check if there is an unlockable game corresponding to the minigame that was just completed
+		if is_in_bonus_game_list[unlockable_game] then
+			if unlocked_bonus_games[unlockable_game] then
+				print("what a shame, you've already unlocked the extra for",  unlockable_game)
+				GameState = 'transition' 
+			else
+				-- offer player to purchase bonus game
+				print("you're in luck, unlockable content for", unlockable_game, "is available!")
+				-- TO-DO: ADD CUTSCENE HERE WHERE PLAYER HAS OPTION TO PURCHASE BONUS CONTENT
+				print(unlockable_game, "unlocked")
+				
+				-- Save updated list of unlockable games to file
+				unlocked_bonus_games[unlockable_game] = "unlocked" -- add bonus game to list of unlocked content
+				playdate.datastore.write(unlocked_bonus_games)
+				
+				GameState = 'transition' 
+			end
+			
+		else
+			print("no extra found for", unlockable_game)
+			-- return to transition gamestate to continue game
+			GameState = 'transition' 
+		end
+
 
 	elseif GameState == 'game_over' then
 		-- TO-DO: UPDATE WITH GAME OVER SEQUENCE
