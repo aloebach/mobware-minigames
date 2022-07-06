@@ -24,10 +24,8 @@ function generate_minigame_list(path)
 end
 
 -- NEW CODE 
-
 -- load save file
 function load_save_file(file)
-	--local scoreFile = playdate.file.open("high_score.txt", playdate.file.kFileRead)
 	local saveFile = playdate.datastore.read()
 	--data = tonumber(saveFile:readline())
 	saveFile:close()
@@ -48,13 +46,14 @@ function generate_bonusgame_list(path)
 	local bonus_game_list = {}
 	local minigame_folders = playdate.file.listFiles(path)
 	
-	-- read list of unlocked bonus games from memory
+	-- read list of already UNLOCKED bonus games from memory
 	local _status, unlocked_bonus_games = pcall(playdate.datastore.read, unlocked_bonus_games)
 	if _status and unlocked_bonus_games then
 		print('list of unlocked bonus games succesfully read from memory')
 	else
 		print("No save file for unlocked bonus games found")
 		unlocked_bonus_games = {}
+		unlocked_bonus_games["ART7"] = "unlocked" -- add ART to list of unlocked content by default
 	end
 	
 	-- traverse folders and generate a list of bonus games

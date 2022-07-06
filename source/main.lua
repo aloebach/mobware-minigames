@@ -9,7 +9,7 @@
 ]]
 
 -- variables for use with testing/debugging:
---DEBUG_GAME = "Word_L" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+DEBUG_GAME = "bong" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
 --SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
 --UNLOCK_ALL_EXTRAS = true -- set this to true to have all extras unlocked!
 
@@ -131,7 +131,7 @@ function playdate.update()
 			-- set background color to black		
 			set_black_background()
 			
-			-- TO-DO: ONLY SHOW MENU INDICATOR IF THE PLAYER HAS UNLOCKED NEW GOODIES! 
+			-- TO-DO: ONLY SHOW MENU INDICATOR IF THE PLAYER HAS UNLOCKED NEW GOODIES?
 			-- add menu indicator, then remove after ~1.2 seconds
 			mobware.MenuIndicator.start()
 			menu_indicator_timer = playdate.timer.new( 1200, function() mobware.MenuIndicator.stop() end ) 
@@ -144,13 +144,11 @@ function playdate.update()
 
 
 	elseif GameState == 'bonus menu' then
-		-- TO-DO: READ MEMORY TO DETERMINE WHICH BONUS GAMES HAVE BEEN UNLOCKED
-			--> build this into the function that gets the bonus game list!
 		
 		if menu_initialized then
 			-- here is where we display the menu and allow the player to choose the bonus game
 			
-			-- only display the launch card once the playdate's animation has finished
+			-- only display the launch card once the onscreen playdate's animation has finished
 			if pd_sprite.currentState == "idle" then
 				launcher_sprite:setVisible(true)
 			else
@@ -159,27 +157,19 @@ function playdate.update()
 			
 			gfx.sprite.update() 
 			
-			--> REPLACE THIS WITH JUST AN AUTO ANIMATION THAT SHOWS CRANK TURN EVERY TIME GAME IS CHANGED?
-			--[[
-			local crank_position = playdate.getCrankPosition() -- Returns the absolute position of the crank (in degrees). Zero is pointing straight up parallel to the device
-			pd_sprite.frame_num = math.floor( crank_position / 45.1 + 1 )
-			pd_sprite:setImage(playdate_image_table:getImage(pd_sprite.frame_num))
-			]]
-			
 			-- update game selected and onscreen menu (either via crank of D-pad)
-			--local menu_movement =  playdate.getCrankTicks(2)
 			local menu_movement =  playdate.getCrankTicks(1)
 			if playdate.buttonJustPressed("up") then menu_movement = -1 end
 			if playdate.buttonJustPressed("down") then menu_movement = 1 end		
 			if menu_movement ~= 0 then
 				bonus_game_number += menu_movement
-				if bonus_game_number > #bonus_game_list then 
+				if bonus_game_number > #unlocked_bonus_games_list then 
 					bonus_game_number = 1 
 				elseif bonus_game_number < 1 then
-					bonus_game_number = #bonus_game_list 
+					bonus_game_number = #unlocked_bonus_games_list 
 				end
 				
-				-- animate sprite's crank
+				-- animate on-screen Playdate sprite's crank
 				if menu_movement > 0 then 
 					pd_sprite:changeState("crank")
 				else
@@ -188,17 +178,22 @@ function playdate.update()
 				
 				-- display launcher card for selected bonus game
 				-- TO-DO: replace static card with card.gif like I do in the credits?
-				local bonus_game_card = gfx.image.new('extras/' .. bonus_game_list[bonus_game_number] .. '/card')
+				local bonus_game_card = gfx.image.new('extras/' .. unlocked_bonus_games_list[bonus_game_number] .. '/card')
 				launcher_sprite:setImage(bonus_game_card)
 			end
 			
 			-- if player presses "A", then load bonus game
-			if playdate.buttonIsPressed("A") then
-				pcall(minigame_cleanup)
-				local bonus_game = bonus_game_list[bonus_game_number]
-				minigame = load_minigame('extras/' .. bonus_game .. '/' .. bonus_game)
-				GameState = 'play' 
+			if playdate.buttonJustPressed("A") then
+				pd_sprite:changeState("transition_out")
 			end
+			
+			-- once transition animation has finished and switched to "loading" state, open bonus game
+			if pd_sprite.currentState == "loading" then
+				pcall(minigame_cleanup)
+				local bonus_game = unlocked_bonus_games_list[bonus_game_number]
+				minigame = load_minigame('extras/' .. bonus_game .. '/' .. bonus_game)
+				GameState = 'play'
+			end 
 			
 		else
 			--initialize menu
@@ -209,26 +204,32 @@ function playdate.update()
 			playdate_image_table = gfx.imagetable.new("images/playdate")
 			pd_sprite = AnimatedSprite.new( playdate_image_table )
 			pd_sprite:addState("transition_in", 1, 5, {tickStep = 2, nextAnimation = "idle"}, true)
-			pd_sprite:addState("transition_out", 1, 5, {tickStep = 2, reverse = true})
+			pd_sprite:addState("transition_out", 1, 5, {tickStep = 2, nextAnimation = "loading", reverse = true})
+			pd_sprite:addState("loading", 1, 1)
 			pd_sprite:addState("crank", 7, 13, {tickStep = 1, nextAnimation = "idle"})
 			pd_sprite:addState("reverse_crank", 7, 13, {tickStep = 1, reverse = true, nextAnimation = "idle"})
 			pd_sprite:addState("idle", 6, 6, {tickStep = 3})	
 			pd_sprite:moveTo(250, 120)
 						
-			-- TO-DO: compare bonus game list to list of unlocked bonus games from memory
-				--> we can simply check if the game is in the list of unlocked extras?
-				--> instead of checking bonus_game_list, we simply iterate over list_of_unlocked_extras
 			bonus_game_number = 1
 			menu_initialized = 1
 			
+			-- generate table containing bonus games which have been unlocked 
+			print("Generating table of unlocked bonus games:")
+			unlocked_bonus_games_list = {}
+			for _bonus_game, _status in pairs(unlocked_bonus_games) do
+				print("adding", _bonus_game)
+				table.insert( unlocked_bonus_games_list, _bonus_game )
+			end
+
 			-- add launcher card for sprite
-			launcher_sprite = gfx.sprite.new(  gfx.image.new('extras/' .. bonus_game_list[bonus_game_number] .. '/card') )
+			launcher_sprite = gfx.sprite.new(  gfx.image.new('extras/' .. unlocked_bonus_games_list[bonus_game_number] .. '/card') )
 			launcher_sprite:moveTo(200, 78)
 			launcher_sprite:add()
 			
 			-- set playdate's default refresh rates so bonus games always run at a constant speed
 			playdate.display.setRefreshRate(30)
-			
+
 		end
 
 
