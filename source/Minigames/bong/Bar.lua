@@ -4,7 +4,7 @@ function Bar:init(orientation)
 
 	Bar.super.init(self)
 	self.name = "bar"
-	self.speed = 10
+	self.speed = 2
 	-- Init orientation
 	if orientation ~= "left" and orientation ~= "right" then
 		orientation = "left"

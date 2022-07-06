@@ -15,14 +15,7 @@ import 'Minigames/bong/Wall'
 
 bong = {}
 
--- all of the code here will be run when the minigame is loaded, so here we'll initialize our graphics and variables:
 local gfx <const> = playdate.graphics
-
--- start timer
-MAX_GAME_TIME = 6 -- define the time at 20 fps that the game will run betfore setting the "defeat"gamestate
-game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "win" end ) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
-	--> after <MAX_GAME_TIME> seconds (at 20 fps) will set "defeat" gamestate
-	--> I'm using the frame timer because that allows me to increase the framerate gradually to increase the difficulty of the minigame
 
 -- Game variables
 local gamestate = "play"
@@ -31,9 +24,6 @@ local player = Bar("right")
 local ball = Ball()
 local topWall = Wall(0)
 local bottomWall = Wall(236)
-
--- added by Drew to curb computer's difficulty
-computer.speed = 4
 
 -- Game background
 gfx.setBackgroundColor(gfx.kColorBlack)
@@ -71,6 +61,12 @@ function drawPlayersTexts()
 	gfx.setImageDrawMode(playdate.graphics.kDrawModeCopy)
 end
 
+-- initialize sounds
+bounce_sound = playdate.sound.sampleplayer.new('Minigames/bong/blipHigh')
+
+-- add crank indicator
+mobware.crankIndicator.start()
+local gamestate = "show_controls" 
 
 function bong.update()
 
@@ -79,22 +75,30 @@ function bong.update()
 
 	-- update timer
 	playdate.frameTimer.updateTimers()
+
+	-- show controls until player touches the crank, then remove indicator and move to play state
+	if gamestate == "show_controls" then
+		local _change, _accelleration = playdate.getCrankChange() 
+		if _change ~= 0 then
+			mobware.crankIndicator.stop()
+			gamestate = "play"
+		end
 	
-	if gamestate == "play" then
+	elseif gamestate == "play" then
 
 		-- move the ball
 		ball:move()
 
-		-- move the player bar (Drew's alternative code)
+		-- move the player bar (Drew's alternative code to control paddle)
 		mobware.crankIndicator:stop()
 		local crank_position = playdate.getCrankPosition()
 		if crank_position > 180 then crank_position = 360 - crank_position end
-		local new_y = 240 * crank_position / 180
 		local new_y = (240 - player.height) * crank_position / 180 + player.height/2
 		player:moveY(new_y)
 		
 		-- move the computer bar
-		if ball.x < math.random(150, 300) then
+		--if ball.x < math.random(150, 300) then
+		if ball.x < math.random(60, 180) then -- tweaking difficulty level to make computer less unbeatable
 			local newComputerY = computer.y
 			local dist = computer.y - ball.y
 			if dist < 0 then
@@ -118,14 +122,6 @@ function bong.update()
 		return 1
 	end
 
-end
-
-
-function bong.cranked(change, acceleratedChange)
-	-- old code to move paddle	
-	--player:moveY(player.y + acceleratedChange * 0.4)
-		
-	
 end
 
 

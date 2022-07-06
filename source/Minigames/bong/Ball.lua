@@ -10,7 +10,7 @@ function Ball:init()
 	local img = self:getDrawnImage()
 	self:setImage(img)
 	--self:moveTo(200, math.floor(math.random(40, 200)))
-	self:moveTo(200, math.floor(math.random(80, 160)))
+	self:moveTo(200, math.floor(math.random(60, 140)))
 	self:setCollideRect(0, 0, self.width, self.height)
 	self:add()
 	return self
@@ -53,6 +53,8 @@ function Ball:move()
 end
 
 function Ball:collisionResponse(other)
+
+	bounce_sound:play(1)
 
 	return playdate.graphics.sprite.kCollisionTypeBounce
 
