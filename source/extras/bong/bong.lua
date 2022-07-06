@@ -103,6 +103,10 @@ function bong.update()
 		-- move the computer bar
 		--if ball.x < math.random(150, 300) then
 		if ball.x < math.random(60, 180) then -- tweaking difficulty level to make computer less unbeatable
+		--if ball.x < math.random(60, 400) then -- tweaking difficulty level to make computer less unbeatable
+		--if ball.x < math.random(10 + (20 * P2_score) , 300) then -- tweaking difficulty level to make computer less unbeatable
+		--if ball.x < math.random(200, 350) then
+
 			local newComputerY = computer.y
 			local dist = computer.y - ball.y
 			if dist < 0 then
@@ -131,6 +135,8 @@ function bong.update()
 		
 	elseif gamestate == "P2_scores" then
 		P2_score += 1
+		-- increase computer paddle speed every time P2 scores
+		computer.speed = math.max(4,P2_score)
 		if P2_score > 9 then
 			gamestate = "P2_wins"
 		else
@@ -143,6 +149,7 @@ function bong.update()
 		if playdate.buttonJustPressed("A") then
 			P1_score = 0
 			P2_score = 0
+			computer.speed = 3
 			ball:reset()
 			gamestate = "play"
 		end
@@ -153,6 +160,7 @@ function bong.update()
 		if playdate.buttonJustPressed("A") then
 			P1_score = 0
 			P2_score = 0
+			computer.speed = 3
 			ball:reset()
 			gamestate = "play"
 		end
