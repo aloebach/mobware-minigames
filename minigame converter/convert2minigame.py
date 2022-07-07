@@ -111,9 +111,5 @@ except:
 	print("ERROR: could not find main.lua")
 
 
-# remove pdxinfo since the minigame doesn't need it
-os.remove(os.path.join(output_directory,"pdxinfo"))
-# remove .pdx file(s)?
-
 print('Minigames files written to', output_directory)
 print('<script completed>\n')
