@@ -1,6 +1,7 @@
 .DS_Store
 */.DS_store
-support/*
 .nova/
+*.pdx
 Mobware Minigames.pdx
 Mobware Minigames.pdx/
+support/*

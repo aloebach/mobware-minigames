@@ -13,7 +13,7 @@ local gfx <const> = playdate.graphics
 -- Crank indicator prompt
 mobware.crankIndicator.start()
 
--- Initialize animation for on-screen Playdate sprite
+-- Initialize graphics
 local playdate_helloWorld_table = gfx.imagetable.new("Minigames/hello_world/images/hello_world")
 
 local pd_sprite = gfx.sprite.new(image_table)
@@ -37,15 +37,9 @@ function hello_world.update()
 	-- update frame timer
 	playdate.frameTimer.updateTimers()
 
-	-- For testing: return 0 if "B" button is pressed
-	if playdate.buttonIsPressed('b') then return 0 end
-
-	-- For testing to see if functions from main.lua can be called without issue:
-	if playdate.buttonIsPressed('down') then mobware.DpadIndicator:start("down") end
-
 	-- Win condition:
 	if pd_sprite.frame == pd_sprite.total_frames then
-		playdate.wait(1000)	-- Pause 1s before returning to main.lua
+		playdate.wait(1000)	-- Pause 1s before ending the minigame
 		return 1
 	end
 
@@ -60,9 +54,7 @@ function hello_world.update()
 		
 		-- wait another 2 seconds then exit
 		playdate.wait(2000)	-- Pause 2s before ending the minigame
-		
-		-- return 0 to indicate that the player has lost and exit the minigame 
-		return 0
+		return 0 -- returning 0 to indicate that the player has lost and exit the minigame 
 	end
 
 end

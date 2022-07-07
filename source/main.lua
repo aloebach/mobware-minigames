@@ -9,9 +9,9 @@
 ]]
 
 -- variables for use with testing/debugging:
-DEBUG_GAME = "bong" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+--DEBUG_GAME = "hello_world" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
 --SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
---UNLOCK_ALL_EXTRAS = true -- set this to true to have all extras unlocked!
+UNLOCK_ALL_EXTRAS = true -- set this to true to have all extras unlocked!
 
 -- Import CoreLibs
 import "CoreLibs/object"
@@ -41,8 +41,8 @@ local is_in_bonus_game_list
 local score
 local lives
 local GAME_WINNING_SCORE = 20 --score that, when reached, will trigger the ending and show credits
-local threshold_for_unlocking_bonus_game = 1 --10  -- minimum score player has to have before being offered unlockables
-local chance_of_unlocking_bonus_game = 100 -- 10 -- percentage chance player will be offered an unlockable after completing minigame
+local threshold_for_unlocking_bonus_game = 10  -- minimum score player has to have before being offered unlockables
+local chance_of_unlocking_bonus_game = 25 -- percentage chance player will be offered an unlockable after completing minigame
 
 -- generate table of minigames and bonus games
 minigame_list = generate_minigame_list("Minigames/")
