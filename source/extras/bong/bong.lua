@@ -27,6 +27,7 @@ local bottomWall = Wall(236)
 local P1_score = 0
 local P2_score = 0
 
+playdate.display.setRefreshRate( 30 )
 
 -- Game background
 gfx.setBackgroundColor(gfx.kColorBlack)
