@@ -101,8 +101,9 @@ function mobware.AccelerometerIndicator.start(direction1, direction2)
 	mobware.AccelerometerIndicator_sprite = AnimatedSprite.new(Accelerometer_spritesheet )	
 
 	-- if no inputs are given, indicator shows playdate moving in every direction 
-	mobware.AccelerometerIndicator_sprite:addState("circle",2,5, {tickStep = 3}, true)
-	--mobware.AccelerometerIndicator_sprite:addState("circle",nil,nil, {tickStep = 2, frames = {2,1,3,1,4,1,5,1}}, true)
+	--mobware.AccelerometerIndicator_sprite:addState("circle",2,5, {tickStep = 3}, true)
+	--mobware.AccelerometerIndicator_sprite:addState("circle",nil,nil, {tickStep = 4, frames = {2,1,3,1,4,1,5,1}}, true)
+	mobware.AccelerometerIndicator_sprite:addState("circle",nil,nil, {tickStep = 3, frames = {3,1,5,1,2,1,4,1}}, true)
 
 	-- If one or two directions are provided as input, use them to create a custom animation state:
 	if direction1 then

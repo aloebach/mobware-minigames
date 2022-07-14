@@ -29,7 +29,7 @@ local firstmaze = false
 
 local time_remaining = MAX_GAME_TIME * FPS / difficulty
 	
-mobware.AccelerometerIndicator.start("left", "right")
+mobware.AccelerometerIndicator.start()
 labyrinth_ready:play()
 
 local ball = {x=200, y=120, vx=0, vy=0, r=10}
