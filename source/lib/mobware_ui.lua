@@ -13,7 +13,7 @@ function mobware.crankIndicator.start()
 	mobware.crankIndicator_sprite = AnimatedSprite.new( crank_spritesheet )
 	mobware.crankIndicator_sprite:addState("crank", 1, 8, {tickStep = 4}, true)
 	mobware.crankIndicator_sprite:moveTo(360,200)
-	mobware.crankIndicator_sprite:setZIndex(100)
+	mobware.crankIndicator_sprite:setZIndex(1000)
 	mobware.crankIndicator_sprite:setIgnoresDrawOffset(true)
 end
 
@@ -31,7 +31,7 @@ function mobware.AbuttonIndicator.start()
 	mobware.AbuttonIndicator_sprite = AnimatedSprite.new( Abutton_spritesheet )
 	mobware.AbuttonIndicator_sprite:addState("mash",1,6, {tickStep = 2}, true )
 	mobware.AbuttonIndicator_sprite:moveTo(364,205)
-	mobware.AbuttonIndicator_sprite:setZIndex(100)
+	mobware.AbuttonIndicator_sprite:setZIndex(1000)
 	mobware.AbuttonIndicator_sprite:setIgnoresDrawOffset(true)
 end
 
@@ -49,7 +49,7 @@ function mobware.BbuttonIndicator.start()
 	mobware.BbuttonIndicator_sprite = AnimatedSprite.new( Bbutton_spritesheet )
 	mobware.BbuttonIndicator_sprite:addState("mash",1,6, {tickStep = 2}, true )
 	mobware.BbuttonIndicator_sprite:moveTo(275,205)
-	mobware.BbuttonIndicator_sprite:setZIndex(100)
+	mobware.BbuttonIndicator_sprite:setZIndex(1000)
 	mobware.BbuttonIndicator_sprite:setIgnoresDrawOffset(true)
 end
 
@@ -80,7 +80,7 @@ function mobware.DpadIndicator.start(direction1, direction2)
 		mobware.DpadIndicator_sprite:changeState("custom")
 	end
 	mobware.DpadIndicator_sprite:moveTo(70,205)
-	mobware.DpadIndicator_sprite:setZIndex(100)
+	mobware.DpadIndicator_sprite:setZIndex(1000)
 	mobware.DpadIndicator_sprite:setIgnoresDrawOffset(true)
 end
 
@@ -119,7 +119,7 @@ function mobware.AccelerometerIndicator.start(direction1, direction2)
 		end
 	end
 	mobware.AccelerometerIndicator_sprite:moveTo(200,190)
-	mobware.AccelerometerIndicator_sprite:setZIndex(100)
+	mobware.AccelerometerIndicator_sprite:setZIndex(1000)
 	mobware.AccelerometerIndicator_sprite:setIgnoresDrawOffset(true)
 end
 
@@ -138,7 +138,7 @@ function mobware.MicIndicator.start()
 	mobware.MicIndicator_sprite = AnimatedSprite.new( Mic_input_spritesheet )
 	mobware.MicIndicator_sprite:addState("animate",nil,nil, {tickStep = 4}, true )
 	mobware.MicIndicator_sprite:moveTo(200,190)
-	mobware.MicIndicator_sprite:setZIndex(100)
+	mobware.MicIndicator_sprite:setZIndex(1000)
 	mobware.MicIndicator_sprite:setIgnoresDrawOffset(true)
 end
 
@@ -156,7 +156,7 @@ function mobware.MenuIndicator.start()
 	mobware.MenuIndicator_sprite = AnimatedSprite.new( menu_button_spritesheet )
 	mobware.MenuIndicator_sprite:addState("animate",nil,nil, {tickStep = 6}, true )
 	mobware.MenuIndicator_sprite:moveTo(380,50)
-	mobware.MenuIndicator_sprite:setZIndex(100)
+	mobware.MenuIndicator_sprite:setZIndex(1000)
 	mobware.MenuIndicator_sprite:setIgnoresDrawOffset(true)
 end
 
