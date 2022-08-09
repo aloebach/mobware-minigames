@@ -18,10 +18,10 @@ local SCROLL_MAX = 240
 local credits_y = 20
 local scroll_y = SCROLL_MAX --> start scroll value at SCROLL_MAX
 
--- load default dog to use if there is no credits sprite available
+-- load sprites for generic game credits
 local default_dog_spritesheet = gfx.imagetable.new("images/default_dog")
--- load spritesheet for demon used for metagame credits
 local demon_spritesheet = gfx.imagetable.new("images/demon")
+local crab_spritesheet = gfx.imagetable.new("images/crab")
 
 -- set refresh rate
 playdate.display.setRefreshRate( 20 )
@@ -106,7 +106,7 @@ function generate_credits()
 	credits_text = gfx.image.new(400, #minigame_list * 500)
 	gfx.lockFocus(credits_text)
 
-	-- Print "MOBWARE MINIGAMES"
+	-- Print our title: "MOBWARE MINIGAMES"
 	gfx.setFont(mobware_font_L)
 	local text_width, text_height = gfx.getTextSize("mobware minigames")
 	local text_x = (400 - text_width) / 2 -- this should put the minigame name in the center of the screen
@@ -124,17 +124,21 @@ function generate_credits()
 
 	-- Metagame credits:
 	print_credits("director", "drew loebach", credits_y)
-	print_credits("font consultant", "neven mrgan", credits_y)
-	-- add music-related sprite here? Maybe pixel drummer?
-	print_credits("credits music", "Triple Tritone", credits_y)
+	print_credits("music", "Triple Tritone", credits_y)
 	print_credits("opening theme", "timhei", credits_y)
-	--print_credits("transition music", "timhei", credits_y)
-	-- add art-related sprite here?
-	--print_credits("card art", "you?", credits_y)
-	--print_credits("opening cinematic", "OR YOU!?", credits_y)
+	print_credits("font consultant", "neven mrgan", credits_y)
+
+	-- animated crab to be displayed next to animated sprite credit
+	local credits_sprite = AnimatedSprite.new( crab_spritesheet )
+	credits_sprite:addState("animate", nil, nil, {tickStep = 2}, true)
+	credits_sprite:setZIndex(1)
+	credits_sprite:setCenter(0.5, 0)
+	credits_sprite:moveTo(320,credits_y - 8)
+	credits_sprite.minigame = "animated_sprite"
+	print_credits("Animated sprite library", "Whitebrim", credits_y)
 
 	-- Special thanks:
-	--add playdate with "thank you!" on the display
+	--add playdate with "thank you!" on the display?
 	print_credits("special thanks to", "nic magnier", credits_y)
 
 	-- Add credits from minigames:
@@ -146,8 +150,7 @@ function generate_credits()
 		local credits_json_path = 'Minigames/' .. minigame .. '/credits.json'
 		local status, working_credits = pcall(getCredits, credits_json_path) 
 		if status == true and working_credits ~= nil then
-			-- credits read successfully!
-			-- nothing else to do here!
+			-- credits read successfully. Nothing else to do here!
 		else
 			print('Error reading credits for', minigame, '-> crediting to anonymous')
 			-- if credits.json can't be loaded then credit the game to "anonymous"
