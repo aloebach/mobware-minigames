@@ -64,7 +64,7 @@ clouds_bottom_screen:addSprite()
 local parachute_sprite = gfx.sprite.new()
 parachute_image = gfx.image.new("Minigames/parachute_grab/images/parachute")
 parachute_sprite:setImage(parachute_image)
-parachute_sprite:setZIndex(2)
+parachute_sprite:setZIndex(4)
 if math.random() > 0.5 then
 	parachuteLeft = true
 	parachute_sprite:moveTo(150, -70)
@@ -95,34 +95,15 @@ player_sprite.crank_counter = 0
 player_sprite.total_frames = 36
 
 
--- start timer
-MAX_GAME_TIME = 10 -- define the time at 20 fps that the game will run betfore setting the "defeat"gamestate
-game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
-	--> after <MAX_GAME_TIME> seconds (at 20 fps) will set "defeat" gamestate
-	--> I'm using the frame timer because that allows me to increase the framerate gradually to increase the difficulty of the minigame
-
-
--- set initial gamestate and start prompt for player to hit the B button
-gamestate = 'hitA'
+-- set initial gamestate
+gamestate = 'play'
 mobware.crankIndicator.start()
 
 
-
-
---[[
-	function <minigame name>.update()
-
-	This function is what will be called every frame to run the minigame.
-	NOTE: The main game will initially set the framerate to call this at 20 FPS to start, and will gradually speed up to 40 FPS
-]]
 function parachute_grab.update()
 
 	-- updates all sprites
 	gfx.sprite.update()
-
-	-- update timer
-	playdate.frameTimer.updateTimers()
-	--print('Time:', game_timer.frame)
 
 	-- Move parachute
 	parachutePosition += 1
@@ -143,8 +124,9 @@ function parachute_grab.update()
 			parachute_sprite:moveBy(-1, 3)
 		end
 	end
+	
+	if parachute_sprite.y > 260 then gamestate = "defeat" end
 
-	-- print(parachutePosition)
 
 	-- Move player gently
 	if (playerSpeedDirectionUp) then
@@ -217,8 +199,8 @@ function parachute_grab.update()
 	end
 
 	-- In the first stage of the minigame, the user needs to hit the "B" button
-	if gamestate == 'hitA' then
-		if playdate.buttonIsPressed('a') then
+	if gamestate == 'play' then
+		if playdate.buttonJustPressed('a') then
 
 			mobware.AbuttonIndicator.stop()
 			
@@ -355,10 +337,7 @@ function parachute_grab.update()
 end
 
 
---[[
-	You can use the playdate's callback functions! Simply replace "playdate" with the name of the minigame.
-	The minigame-version of playdate.cranked looks like this:
-]]
+
 function parachute_grab.cranked(change, acceleratedChange)
 	-- Once crank is turned, turn off crank indicator
 	if mobware.crankIndicator then
@@ -368,9 +347,6 @@ function parachute_grab.cranked(change, acceleratedChange)
 			AbuttonIndicator_on = true
 		end
 	end
-
-	-- When crank is turned, play clicking noise
-	-- click_noise:play(1)
 
 	-- update sprite's frame so that the sprite will reflect the crank's actual position
 	local crank_position = playdate.getCrankPosition() -- Returns the absolute position of the crank (in degrees). Zero is pointing straight up parallel to the device
@@ -383,11 +359,6 @@ function parachute_grab.cranked(change, acceleratedChange)
 
 
 end
-
--- make sure to add put your name in "credits.json" and add "credits.gif" to the minigame's root folder.
-	--> These will be used to credit your game during the overarching game's credits sequence!
-
---> Finally, go to main.lua and search for "DEBUG_GAME". You'll want to set this to the name of your minigame so that your minigame gets loaded every turn!
 
 -- Minigame package should return itself
 return parachute_grab
