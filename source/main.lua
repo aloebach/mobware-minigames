@@ -9,7 +9,7 @@
 ]]
 
 -- variables for use with testing/debugging:
---DEBUG_GAME = "hello_world" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+--DEBUG_GAME = "minigame_template" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
 --SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
 UNLOCK_ALL_EXTRAS = true -- set this to true to have all extras unlocked!
 
@@ -29,6 +29,8 @@ import "CoreLibs/keyboard"
 import 'lib/AnimatedSprite' --used to generate animations from spritesheet
 import 'lib/mobware_ui'
 import 'lib/mobware_utilities'
+import 'lib/Playdate'
+import 'lib/Coin'
 
 -- Defining gfx as shorthand for playdate graphics API
 local gfx <const> = playdate.graphics
@@ -39,7 +41,7 @@ local minigame
 local unlockable_game
 local is_in_bonus_game_list
 local score
-local lives
+local money
 local GAME_WINNING_SCORE = 20 --score that, when reached, will trigger the ending and show credits
 local threshold_for_unlocking_bonus_game = 10  -- minimum score player has to have before being offered unlockables
 local chance_of_unlocking_bonus_game = 25 -- percentage chance player will be offered an unlockable after completing minigame
@@ -52,22 +54,26 @@ local bonus_game_list, unlocked_bonus_games = generate_bonusgame_list("extras/")
 local s, ms = playdate.getSecondsSinceEpoch()
 math.randomseed(ms,s)
 
--- load main game music
-local main_theme = playdate.sound.fileplayer.new('sounds/mobwaretheme')
-
 -- initialize fonts
 mobware_font_S = gfx.font.new("fonts/Mobware_S")
 mobware_font_M = gfx.font.new("fonts/Mobware_M")
 mobware_font_L = gfx.font.new("fonts/Mobware_L")
 mobware_default_font = mobware_font_M
 
--- initialize spritesheets for transitions
-playdate_spritesheet = gfx.imagetable.new("images/playdate_spinning")
-demon_spritesheet = gfx.imagetable.new("images/demon_big")
+-- initialize sprite sheets for transitions
+local playdate_spritesheet = gfx.imagetable.new("images/playdate_spinning")
+local demon_spritesheet = gfx.imagetable.new("images/demon_big")
+
+-- initialize music
+local main_theme = playdate.sound.fileplayer.new('sounds/mobwaretheme')
+local victory_music = playdate.sound.fileplayer.new('sounds/victory_v2')
+local defeat_music = playdate.sound.fileplayer.new('sounds/defeat')
+
 
 function initialize_metagame()
 	score = 0
-	lives = 3
+	money = 30
+	display_money = money
 
 	-- if DEBUG_GAME is set then jump right into the action!
 	if DEBUG_GAME then
@@ -75,14 +81,6 @@ function initialize_metagame()
 	else
 		GameState = 'start'
 	end
-
-    -- the state of our game; can be any of the following:
-    -- 1. 'start' (the beginning of the game, before first minigame)
-    -- 2. 'transition' (the state in between minigames)
-    -- 3. 'initialize' (the next minigame is chosen and initialized)
-    -- 4. 'play' (minigame is being played)
-    -- 5. 'credits' (the player has reached a score to get the ending which displays the game's credits)
-    -- 6. 'game_over' (the game is over, display score, ready for restart)
 
     -- Set initial FPS to 20, which will gradually increase to a maximum of 40
 	time_scaler = 0 --initial value for variable used to speed up game speed over time
@@ -257,14 +255,14 @@ function playdate.update()
 		if game_result == 0 or game_result == 1 or game_result == 2 then
 			GameState = 'transition'
 			
-			--print('Minigame return value: ', game_result)
-			
-			if game_result == 0 then
-				lives = lives - 1
-				if lives == 0 then GameState = 'game_over' end
+			pcall(minigame_cleanup)
+						
+			if game_result == 0 then 
+				money = money - 10 -- update our score
+				if money <= 0 then GameState = 'game_over' end
+
 			elseif game_result == 1 then
 				score = score + 1
-				-- TO-DO: ADD MINIGAME_WON GAMESTATE with TRIUMPHANT SOUND EFFECT AND LOGIC FOR HAPPY ANIMATION!
 				
 				-- logic for randomly offering for the player to buy bonus content if they complete a minigame above a certain difficulty level:
 				if score >= threshold_for_unlocking_bonus_game then
@@ -282,40 +280,52 @@ function playdate.update()
 				-- increase game speed after each successful minigame:
 				time_scaler = time_scaler + 1
 			end
-			
-			pcall(minigame_cleanup)
-			
+						
 			-- Set up demon sprite for transition animation
 			set_black_background()
 			demon_sprite = AnimatedSprite.new( demon_spritesheet )
 			demon_sprite:addState("animate", nil, nil, {tickStep = 3, frames = {2,4}}, true)
-			demon_sprite:addState("throwing", 1, 4, {tickStep = 3})
-			demon_sprite:addState("laughing", nil, nil, {tickStep = 3, frames = {2,4}})
-			demon_sprite:addState("angry", nil, nil, {tickStep = 3, frames = {5,6}})
+			demon_sprite:addState("laughing", nil, nil, {tickStep = 2, frames = {2,4}, loop = 5, nextAnimation = "throwing"})
+			demon_sprite:addState("angry", nil, nil, {tickStep = 2, frames = {5,6}, reverse = true, loop = 3, nextAnimation = "throwing"})
+			demon_sprite:addState("throwing", 1, 4, {tickStep = 3, loop = 3, nextAnimation = "finish"})
+			demon_sprite:addState("finish", nil, nil, {tickStep = 2, frames = {7,7}, nextAnimation = "animate"})
 			demon_sprite:moveTo(200, 120)
 			demon_sprite:setZIndex(1)
 			
+			-- demon throws playdates in "throwing" state
+			demon_sprite.states.throwing.onFrameChangedEvent = function (self)
+				if self._currentFrame == 1 then
+					local playdate_sprite = Playdate:new(270,130,12)
+				elseif self._currentFrame == 3 then
+					local playdate_sprite = Playdate:new(130,130,-12)
+				end
+			end -- remove sprite once animation completes
+
+			-- once throwing state is completed throw one last playdate at the player and begin minigame
+			demon_sprite.states.throwing.onAnimationEndEvent = function () 
+				local playdate_sprite = AnimatedSprite.new( playdate_spritesheet )
+				playdate_sprite:addState("animate", 1, 18, {tickStep = 1, reverse = true, loop = false, onAnimationEndEvent = function () GameState = 'initialize' end }, true)
+				playdate_sprite:moveTo(200, 120)
+				playdate_sprite:setZIndex(200)
+			end -- remove sprite once animation completes
+			
+			
 			-- animate demon laughing or crying depending on if the player won the minigame
 			if game_result == 0 then 
+				local music_rate = math.min(1 + time_scaler / 20, 2)
+				--defeat_music:setRate(music_rate)
+				defeat_music:play(1)
 				demon_sprite:changeState("laughing")
+				coin1 = Coin:new(140, 100)
+				coin2 = Coin:new(260, 100)
 			elseif game_result == 1 then
+				victory_music:play(1) -- play victory theme 
 				demon_sprite:changeState("angry")
+			else
+				victory_music:play(1) -- play victory theme 
+				demon_sprite:changeState("throwing")				
 			end
-			
-			-- Set up PlayDate sprite for transition animation			
-			playdate_sprite = AnimatedSprite.new( playdate_spritesheet )
-			playdate_sprite:addState("animate", 1, 18, {tickStep = 1, yoyo = true, loop = 2}, true)
-			playdate_sprite:moveTo(200, 120)
-			playdate_sprite:setZIndex(2)
-			
-			-- Timer will display victory/defeat animation, then change to normal transition animation
-			transition_timer1 = playdate.frameTimer.new(20,  
-				function() 
-					demon_sprite:changeState("throwing")
-					transition_timer2 = playdate.frameTimer.new(20,  function() GameState = 'initialize' end)
-				end)
-			-- playdate.easingFunctions.outCubic(t, b, c, d) 
-			-- playdate.easingFunctions.outCubic(timer.currentTime, 120, 120, d) 
+
 		end
 
 
@@ -328,11 +338,17 @@ function playdate.update()
 		-- updates sprites
 		gfx.sprite.update() 
 		
-		-- display UI for transition
-		-- TO-DO: Update UI elements
+		-- updating player's score
+		if display_money > money then
+			display_money -= 1
+			if display_money <= money then display_money = money end
+			--if display_money <= 0 then GameState = 'game_over' end
+		end
+
+		-- display UI for transition		
 		gfx.setFont(mobware_font_S)
 		mobware.print("score: " .. score, 15, 20)
-		mobware.print("lives: " .. lives, 15, 65)
+		mobware.print("money: $" .. display_money, 15, 65)
 		gfx.setFont(mobware_default_font) -- reset font to default
 		
 		
@@ -382,6 +398,7 @@ function playdate.update()
 		-- TO-DO: UPDATE WITH GAME OVER SEQUENCE
 
 		-- Display game over screen
+		pcall(minigame_cleanup)
 		gfx.clear(gfx.kColorBlack)
 		gfx.setFont(mobware_font_M)
 		mobware.print("GAME OVER!")  
@@ -400,7 +417,9 @@ function playdate.update()
 		GameState = 'play' 		
 
 	end
-
+	
+	-- Added for debugging
+	--playdate.drawFPS()
 
 end
 
@@ -428,9 +447,9 @@ function playdate.rightButtonUp() if minigame and minigame.rightButtonUp then mi
 function playdate.upButtonDown() if minigame and minigame.upButtonDown then minigame.upButtonDown() end end
 function playdate.upButtonUp() if minigame and minigame.upButtonUp then minigame.upButtonUp() end end
 
-
+sysMenu = playdate.getSystemMenu()
 -- Add menu option to return to main menu
-playdate.getSystemMenu():addMenuItem(
+sysMenu:addMenuItem(
     'Main Game',
     function()
 		if GameState ~= "menu" then
@@ -442,7 +461,7 @@ playdate.getSystemMenu():addMenuItem(
 )
 
 -- Add menu option to view bonus content
-playdate.getSystemMenu():addMenuItem(
+sysMenu:addMenuItem(
 	'bonus games',
 	function()
 		pcall(minigame_cleanup)
@@ -452,14 +471,20 @@ playdate.getSystemMenu():addMenuItem(
 )
 
 -- Add menu option to view credits
-playdate.getSystemMenu():addMenuItem(
+sysMenu:addMenuItem(
 	'Game Credits',
 	function()
 		pcall(minigame_cleanup)
 		GameState = "credits"
 	end
 )
-
+--[[
+sysMenu:addOptionsMenuItem("game:", minigame_list, 
+	function(selected_minigame)
+		DEBUG_GAME = selected_minigame
+	end
+)
+]]
 
 -- For debugging
 function  playdate.keyPressed(key)
