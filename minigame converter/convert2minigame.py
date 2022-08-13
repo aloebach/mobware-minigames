@@ -10,6 +10,7 @@ import argparse
 #Parse command-line arguments and set default values if no argument is specified
 parser = argparse.ArgumentParser()
 parser.add_argument("path", help="directory where the Playdate game is located")
+#parser.add_argument("--keeppaths", help="keep original paths for import functions")
 parser.add_argument("--output", help="path where minigame code will be outputted")
 parser.add_argument("--name", help="Specify the name of the minigame")
 
@@ -31,7 +32,7 @@ print('Creating minigame files for:', minigame_name)
 if args.output:
 	output_directory = args.output
 else:
-	output_directory = "_" + minigame_name
+	output_directory = "_" + minigame_name + "_minigame"
 
 print("outputting minigame files to:", output_directory, "..." )
 
@@ -77,17 +78,93 @@ function_dictionary = {
 	'playdate.upButtonDown':minigame_name + '.upButtonDown',
 	'playdate.upButtonUp':minigame_name + '.upButtonUp'
 	}
+	
+# create a dictionary I can iterate over and do a replace operation to add the minigame path for importing files and functions
+minigame_path = 'Minigames/' + minigame_name + '/'
+path_dictionary = {
+	'import \'': 'import \'' + minigame_path,
+	'import \"': 'import \"' + minigame_path,
+	'image.new(\'': 'image.new(\'' + minigame_path,
+	'image.new(\"': 'image.new(\"' + minigame_path,
+	'imagetable.new(\'': 'imagetable.new(\'' + minigame_path,
+	'imagetable.new(\"': 'imagetable.new(\"' + minigame_path,
+	'fileplayer.new(\'': 'fileplayer.new(\'' + minigame_path,
+	'fileplayer.new(\"': 'fileplayer.new(\"' + minigame_path,
+	'sampleplayer.new(\'': 'sampleplayer.new(\'' + minigame_path,
+	'sampleplayer.new(\"': 'sampleplayer.new(\"' + minigame_path,
+	
+	'image:load(\'':'image:load(\'' + minigame_path,
+	'image:load(\"':'image:load(\"' + minigame_path,
+	'imagetable:load(\'':'imagetable:load(\'' + minigame_path,
+	'imagetable:load(\"':'imagetable:load(\"' + minigame_path,	
+	'font.new(\'': 'font.new(\'' + minigame_path,
+	'font.new(\"': 'font.new(\"' + minigame_path,
+	'newFamily(\'': 'newFamily(\'' + minigame_path,
+	'newFamily(\"': 'newFamily(\"' + minigame_path,
+	'video.new(\'': 'video.new(\'' + minigame_path,
+	'video.new(\"': 'video.new(\"' + minigame_path,
+	'decodeFile(\'': 'decodeFile(\'' + minigame_path,
+	'decodeFile(\"': 'decodeFile(\"' + minigame_path,
+	'json.encodeToFile(\'': 'json.encodeToFile(\'' + minigame_path,
+	'json.encodeToFile(\"': 'json.encodeToFile(\"' + minigame_path,
+	'fileplayer:load(\'':'fileplayer:load(\'' + minigame_path,
+	'fileplayer:load(\"':'fileplayer:load(\"' + minigame_path,
+	'sample.new(\'': 'sample.new(\'' + minigame_path,
+	'sample.new(\"': 'sample.new(\"' + minigame_path,
+	'sequence.new(\'': 'sequence.new(\'' + minigame_path,
+	'sequence.new(\"': 'sequence.new(\"' + minigame_path,
+	'loadImage(\'': 'loadImage(\'' + minigame_path,
+	'loadImage(\"': 'loadImage(\"' + minigame_path,
+	'readImage(\'': 'readImage(\'' + minigame_path,
+	'readImage(\"': 'readImage(\"' + minigame_path,	
+	'file.open(\'': 'file.open(\'' + minigame_path,
+	'file.open(\"': 'file.open(\"' + minigame_path,
+	'listFiles(\'': 'listFiles(\'' + minigame_path,
+	'listFiles(\"': 'listFiles(\"' + minigame_path,	
+	'exists(\'': 'exists(\'' + minigame_path,
+	'exists(\"': 'exists(\"' + minigame_path,	
+	'isdir(\'': 'isdir(\'' + minigame_path,
+	'isdir(\"': 'isdir(\"' + minigame_path,			
+	'mkdir(\'': 'mkdir(\'' + minigame_path,
+	'mkdir(\"': 'mkdir(\"' + minigame_path,		
+	'delete(\'': 'delete(\'' + minigame_path,
+	'delete(\"': 'delete(\"' + minigame_path,		
+	'getSize(\'': 'getSize(\'' + minigame_path,
+	'getSize(\"': 'getSize(\"' + minigame_path,	
+	'getType(\'': 'getType(\'' + minigame_path,
+	'getType(\"': 'getType(\"' + minigame_path,	
+	'modtime(\'': 'modtime(\'' + minigame_path,
+	'modtime(\"': 'modtime(\"' + minigame_path,	
+	'load(\'': 'load(\'' + minigame_path,
+	'load(\"': 'load(\"' + minigame_path,	
+	'run(\'': 'run(\'' + minigame_path,
+	'run(\"': 'run(\"' + minigame_path,	
+	'imageSizeAtPath(\'': 'imageSizeAtPath(\'' + minigame_path,
+	'imageSizeAtPath(\"': 'imageSizeAtPath(\"' + minigame_path,	
+	'nineSlice.new(\'': 'nineSlice.new(\'' + minigame_path,
+	'nineSlice.new(\"': 'nineSlice.new(\"' + minigame_path
+}	
+	
 
 # iterate over all lua files
+CoreLibs_warning = False
 for filename in file_list:
 	#print("checking file:", filename)
 
 	with open(filename, "r") as file:
 		data = file.read()
-	
+		
+		if "CoreLibs" in data:
+			print("WARNING: CoreLibs import found in", filename)
+			CoreLibs_warning = True
+				
 		# search for standard playdate SDK commands and replace with minigame commands
 		for PD_function in function_dictionary:
 			data = data.replace(PD_function, function_dictionary[PD_function])
+
+		# search for functions that import sometihg from a path and replace with minigame path
+		for PD_path in path_dictionary:
+			data = data.replace(PD_path, path_dictionary[PD_path])
 	
 	# Writing the replaced data to file
 	with open(filename, "w") as file:
@@ -102,6 +179,10 @@ for filename in file_list:
 		if os.path.basename(filename) == "main.lua":
 			file.write("\n-- Return minigame package\n")
 			file.write("return " + minigame_name)
+
+if CoreLibs_warning:
+	print("  If these CoreLibs libraries are imported in Mobware Minigames main.lua then they can simply be removed here.")
+	print("  Otherwise this will require special handling.")
 
 
 # rename main.lua to the name of the minigame
