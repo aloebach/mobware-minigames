@@ -21,6 +21,7 @@ Once you've cloned the repository, open Minigames/minigame-template and follow t
 * Minigames should last no longer than 10 seconds.
 * The minigame should be in its own folder under "Minigames", and the <minigame_name> folder should have the same name as <minigame_name>.lua. 
 * All necessary files such a libraries, music and image files should be contained within the individual minigame's folder, and the games can reference them accordingly. 
+* <minigame_name>.lua should start by defining the minigame package (ex. `<minigame_name> = {}`) and end with returning the minigame package (ex. `return <minigame_name>`). See the minigame template for reference. 
 * <minigame_name>.lua must contain the function <minigame_name>.update(), similar to playdate.update(), which is called once every frame.
 * <minigame_name>.update() should return a 1 if the player won, or a 0 if the player lost.
 * Playdate's additional callback functions are supported, but will be similarly named the <minigame_name> equivalent, such as <minigame_name>.cranked(change, acceleratedChange)
