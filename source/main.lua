@@ -9,8 +9,8 @@
 ]]
 
 -- variables for use with testing/debugging:
---DEBUG_GAME = "minigame_template" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
---SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
+DEBUG_GAME = "asheteroids" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+--SET_FRAME_RATE = 33 --> as the name implies will set a framerate. Used for testing minigames at various framerates
 UNLOCK_ALL_EXTRAS = true -- set this to true to have all extras unlocked!
 
 -- Import CoreLibs
@@ -255,6 +255,9 @@ function playdate.update()
 		if game_result == 0 or game_result == 1 or game_result == 2 then
 			GameState = 'transition'
 			
+			-- unload & clean-up minigame
+			minigame = nil
+			_minigame_env = nil	
 			pcall(minigame_cleanup)
 						
 			if game_result == 0 then 

@@ -91,10 +91,7 @@ end
 
 -- clean-up graphics & sound after running a minigame
 function minigame_cleanup()
-	-- unload minigame
-	minigame = nil
-	_minigame_env = nil	
-	
+
 	-- Reset values for main game and clean up assets/memory
 	gfx.clear()
 	playdate.display.setRefreshRate( SET_FRAME_RATE or math.min(20 + time_scaler, 40) )
