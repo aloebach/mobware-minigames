@@ -19,9 +19,6 @@ local thruster_noise = playdate.sound.sampleplayer.new('extras/asheteroids/sound
 function Player:new()
 	local self = VectorSprite:new({4,0, -4,3, -2,0, -4,-3, 4,0})
 	
-	-- load icons showing player's lives
-	--setup_lives()
-	
 	self.thrust = { VectorSprite:new({-4, 3, -6,0, -4,-3}),
 					VectorSprite:new({-4, 3, -9,0, -4,-3}) }
 
@@ -38,6 +35,7 @@ function Player:new()
 	self.angle = 0
 	self.thrusting = 0
 	self.wraps = true
+	self.invincibility = 0
 	
 	function self:collide(s)
 		print(s)
@@ -48,9 +46,11 @@ function Player:new()
 	end
 
 	function self:hit(asteroid)
-		thruster_noise:stop()
-		explosion_noise:play(4, 2)
-		gamestate = "player_hit"
+		if self.invincibility <= 0 then 
+			thruster_noise:stop()
+			explosion_noise:play(4, 2)
+			gamestate = "player_hit"
+		end
 	end
 
 	function self.collision(other)
@@ -69,6 +69,15 @@ function Player:new()
 	
 	function self:update()
 		self:updatePosition()
+		
+		if self.invincibility > 0 then
+			self.invincibility -= 1
+			if self.invincibility % 2 == 1 then 
+				self:setVisible(false)
+			else
+				self:setVisible(true)
+			end
+		end
 
 		if self.thrusting == 1 
 		then

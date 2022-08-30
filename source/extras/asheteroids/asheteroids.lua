@@ -8,6 +8,7 @@ local gfx = playdate.graphics
 
 playdate.display.setRefreshRate( 20 )
 
+-- initialize font
 local asheteroids_font = gfx.font.new('extras/asheteroids/font/asheteroids_white')
 gfx.setFont(asheteroids_font)
 
@@ -15,28 +16,29 @@ function hypot(x,y)
 	return math.sqrt(x*x+y*y)
 end
 
+-- local variables
 local aspeed = 3
-local acount = 5
-score = 0
-lives = 3
+--local acount = 5
+local lives = 3
+local STARGING_NUM_OF_ASTEROIDS = 5
+local number_of_asteroids = STARGING_NUM_OF_ASTEROIDS
 
+-- global variables
+score = 0
 gamestate = "play" 
 
 function setup_lives()
 	-- icons showing player's lives
 	local lives_icon = gfx.image.new("extras/asheteroids/images/1up")
-	life1 = gfx.sprite.new()
-	life1:setImage(lives_icon)
+	life1 = gfx.sprite.new(lives_icon)
 	life1:add()
 	life1:moveTo(20, 40) -- display in upper left corner
 	
-	life2 = gfx.sprite.new()
-	life2:setImage(gfx.image.new("extras/asheteroids/images/1up"))
+	life2 = gfx.sprite.new(lives_icon)
 	life2:add()
 	life2:moveTo(36, 40) -- display in upper left corner
 	
-	life3 = gfx.sprite.new()
-	life3:setImage(gfx.image.new("extras/asheteroids/images/1up"))
+	life3 = gfx.sprite.new(lives_icon)
 	life3:add()
 	life3:moveTo(52, 40) -- display in upper left corner
 end
@@ -46,7 +48,7 @@ function setup_asteroids()
 	
 	asteroidCount = 0
 	
-	for i = 1,5 do
+	for i = 1,number_of_asteroids do
 		a = Asteroid:new()
 		
 		local x,y,dx,dy
@@ -64,7 +66,6 @@ function setup_asteroids()
 end
 
 function setup_player()
-	
 	player = Player:new()
 	player:moveTo(200, 120)
 	player:setScale(3)
@@ -72,14 +73,14 @@ function setup_player()
 	player:setStrokeColor(gfx.kColorWhite)
 	player.wraps = 1
 	player:addSprite()
-
 end
 
 function setup()
-	
-	
 	-- remove existing sprites on screen
 	gfx.sprite.removeAll()
+	
+	-- reset the number of asteroids to spawn
+	number_of_asteroids = STARGING_NUM_OF_ASTEROIDS
 	
 	setup_asteroids()
 	setup_player()
@@ -88,12 +89,10 @@ function setup()
 	if lives < 1 then life1:setVisible(false) end
 	if lives < 2 then life2:setVisible(false) end
 	if lives < 3 then life3:setVisible(false) end
-	
 end
 
 
 setup()
-
 
 gfx.setColor(gfx.kColorBlack)
 gfx.fillRect(0, 0, 400, 240)
@@ -129,7 +128,18 @@ function asheteroids.update()
 			player:remove()
 		else
 			gamestate = "play" 
-			setup()
+
+			-- reset player
+			player:remove()
+			player.thrust[1]:remove()
+			player.thrust[2]:remove()
+			setup_player()
+			player.invincibility = 25
+			
+			-- update player's lives in UI
+			if lives < 1 then life1:setVisible(false) end
+			if lives < 2 then life2:setVisible(false) end
+			if lives < 3 then life3:setVisible(false) end
 		end
 		
 	elseif gamestate == "game_over" then
@@ -162,9 +172,10 @@ function asheteroids.AButtonDown()	if gamestate == "play" then player:shoot() en
 
 function levelCleared() 
 	print("LEVEL CLEAR!")
+	player.invincibility = 25
+	number_of_asteroids += 1 -- increase difficulty by spawning more astroids with each level
 	setup_asteroids() 
 end
-
 
 -- Return minigame package
 return asheteroids
