@@ -14,10 +14,14 @@ local thrustspeed = 0.6
 local laser_noise = playdate.sound.sampleplayer.new('extras/asheteroids/sounds/laserShoot')
 laser_noise:setVolume(0.5)
 local explosion_noise = playdate.sound.sampleplayer.new('extras/asheteroids/sounds/explosion')
+local thruster_noise = playdate.sound.sampleplayer.new('extras/asheteroids/sounds/thruster')
 
 function Player:new()
 	local self = VectorSprite:new({4,0, -4,3, -2,0, -4,-3, 4,0})
-
+	
+	-- load icons showing player's lives
+	--setup_lives()
+	
 	self.thrust = { VectorSprite:new({-4, 3, -6,0, -4,-3}),
 					VectorSprite:new({-4, 3, -9,0, -4,-3}) }
 
@@ -44,8 +48,9 @@ function Player:new()
 	end
 
 	function self:hit(asteroid)
+		thruster_noise:stop()
 		explosion_noise:play(4, 2)
-		player_hit = true
+		gamestate = "player_hit"
 	end
 
 	function self.collision(other)
@@ -94,11 +99,13 @@ function Player:new()
 	function self:startThrust()
 		self.thrust[self.thrustframe]:setVisible(true)
 		self.thrusting = 1
+		thruster_noise:play(1)
 	end
 
 	function self:stopThrust()
 		self.thrust[self.thrustframe]:setVisible(false)
 		self.thrusting = 0
+		thruster_noise:stop()
 	end
 
 	return self

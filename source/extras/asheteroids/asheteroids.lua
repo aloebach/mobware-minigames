@@ -8,7 +8,7 @@ local gfx = playdate.graphics
 
 playdate.display.setRefreshRate( 20 )
 
-asheteroids_font = gfx.font.new('extras/asheteroids/font/asheteroids_white')
+local asheteroids_font = gfx.font.new('extras/asheteroids/font/asheteroids_white')
 gfx.setFont(asheteroids_font)
 
 function hypot(x,y)
@@ -18,14 +18,35 @@ end
 local aspeed = 3
 local acount = 5
 score = 0
-player_hit = nil
+lives = 3
 
-local gamestate = "intro" 
+gamestate = "play" 
+
+function setup_lives()
+	-- icons showing player's lives
+	local lives_icon = gfx.image.new("extras/asheteroids/images/1up")
+	life1 = gfx.sprite.new()
+	life1:setImage(lives_icon)
+	life1:add()
+	life1:moveTo(20, 40) -- display in upper left corner
+	
+	life2 = gfx.sprite.new()
+	life2:setImage(gfx.image.new("extras/asheteroids/images/1up"))
+	life2:add()
+	life2:moveTo(36, 40) -- display in upper left corner
+	
+	life3 = gfx.sprite.new()
+	life3:setImage(gfx.image.new("extras/asheteroids/images/1up"))
+	life3:add()
+	life3:moveTo(52, 40) -- display in upper left corner
+end
+
 
 function setup_asteroids()
 	
+	asteroidCount = 0
+	
 	for i = 1,5 do
-	--for i = 1,2 do
 		a = Asteroid:new()
 		
 		local x,y,dx,dy
@@ -55,8 +76,19 @@ function setup_player()
 end
 
 function setup()
+	
+	
+	-- remove existing sprites on screen
+	gfx.sprite.removeAll()
+	
 	setup_asteroids()
 	setup_player()
+	setup_lives()
+	
+	if lives < 1 then life1:setVisible(false) end
+	if lives < 2 then life2:setVisible(false) end
+	if lives < 3 then life3:setVisible(false) end
+	
 end
 
 
@@ -70,46 +102,49 @@ gfx.setColor(gfx.kColorWhite)
 
 
 function asheteroids.update()
+	
 	gfx.sprite.update()
 	
-	if player_hit then
-		-- dramatic shake effect
+	if gamestate == "player_hit" then
+		
+		-- dramatic shake effect when player is hit
 		local frame_counter = 0
 		while frame_counter < 20 do
-			random_shake_x = math.random(-6,6)
-			random_shake_y = math.random(-6,6)
+			local random_shake_x = math.random(-6,6)
+			local random_shake_y = math.random(-6,6)
 			playdate.display.setOffset(random_shake_x, random_shake_y)
 			frame_counter += 1
 			playdate.wait(0.05)
 		end
-		-- once frame counter hits its threshold reset screen and return 0 
 		playdate.display.setOffset(0,0)
+		playdate.wait(500)
 		
-		-- remove sprites on screen
-		gfx.sprite.removeAll()
+		lives -= 1
 		
-		-- after player hits a button...
-		score = 0
-		player_hit = nil
-		setup()
-		
-	end
-
-	--[[
-	if gamestate == "intro" then	
-		
-		-- if player shoots a bullet then start game
-		if playdate.buttonJustPressed("A") or playdate.buttonJustPressed("B") then
+		if lives <= 0 then 
+			gamestate = "game_over"
+			life1:setVisible(false) 
+			player.thrust[1]:remove()
+			player.thrust[2]:remove()
+			player:remove()
+		else
+			gamestate = "play" 
 			setup()
-			gamestate = "play"
-			mobware.AbuttonIndicator.stop()
-			gfx.setFont(asheteroids_font)
 		end
 		
-	else
-		
+	elseif gamestate == "game_over" then
+		gfx.drawText("GAME OVER",139,100)
+		if playdate.buttonIsPressed("B") then 
+			lives = 3
+			life1:setVisible(true)
+			life2:setVisible(true)
+			life3:setVisible(true)
+			score = 0
+			gamestate = "play"
+			setup() 
+		end
 	end
-	]]
+	
 	gfx.drawText(score,10,10)
 	
 end
@@ -121,12 +156,10 @@ function asheteroids.leftButtonUp()	turn = 0; player:turn(turn)	end
 function asheteroids.rightButtonDown()	turn += 1; player:turn(turn)	end
 function asheteroids.rightButtonUp()	turn = 0; player:turn(turn)	end
 
-function asheteroids.upButtonDown()	player:startThrust()	end
+function asheteroids.upButtonDown()	if gamestate == "play" then player:startThrust() end end
 function asheteroids.upButtonUp()		player:stopThrust()	end
-function asheteroids.AButtonDown()		player:shoot()	end
---function asheteroids.BButtonDown()		player:shoot()	end
+function asheteroids.AButtonDown()	if gamestate == "play" then player:shoot() end end
 
---function levelCleared() setup() end
 function levelCleared() 
 	print("LEVEL CLEAR!")
 	setup_asteroids() 
