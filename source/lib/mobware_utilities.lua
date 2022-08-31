@@ -23,20 +23,6 @@ function generate_minigame_list(path)
 
 end
 
--- NEW CODE 
--- load save file
-function load_save_file(file)
-	local saveFile = playdate.datastore.read()
-	--data = tonumber(saveFile:readline())
-	saveFile:close()
-	return data
-end
-
-local status, save_data = pcall(load_save_file)
-if status == false then 
-	print("No save file found in memory")
-	save_data = 0
-end
 
 -- generate table of bonus games from directories found in the given path
 function generate_bonusgame_list(path)
@@ -47,7 +33,7 @@ function generate_bonusgame_list(path)
 	local minigame_folders = playdate.file.listFiles(path)
 	
 	-- read list of already UNLOCKED bonus games from memory
-	local _status, unlocked_bonus_games = pcall(playdate.datastore.read, unlocked_bonus_games)
+	local _status, unlocked_bonus_games = pcall(playdate.datastore.read, "mobware_unlockables")
 	if _status and unlocked_bonus_games then
 		print('list of unlocked bonus games succesfully read from memory')
 	else

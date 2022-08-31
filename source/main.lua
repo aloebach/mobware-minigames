@@ -4,13 +4,12 @@
 	Author: Andrew Loebach
 	loebach@gmail.com
 
--- This main program will reference the Minigames and run the minigames by calling their functions to execute the minigame's logic
--- TO-DO: Fix bug where minigame can reset sporadically
+	This main program will reference the Minigames and run the minigames by calling their functions to execute the minigame's logic
 ]]
 
 -- variables for use with testing/debugging:
-DEBUG_GAME = "asheteroids" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
---SET_FRAME_RATE = 33 --> as the name implies will set a framerate. Used for testing minigames at various framerates
+--DEBUG_GAME = "asheteroids" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+--SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
 UNLOCK_ALL_EXTRAS = true -- set this to true to have all extras unlocked!
 
 -- Import CoreLibs
@@ -385,7 +384,7 @@ function playdate.update()
 				
 				-- Save updated list of unlockable games to file
 				unlocked_bonus_games[unlockable_game] = "unlocked" -- add bonus game to list of unlocked content
-				playdate.datastore.write(unlocked_bonus_games)
+				playdate.datastore.write(unlocked_bonus_games, "mobware_unlockables")
 				
 				GameState = 'transition' 
 			end
@@ -456,6 +455,8 @@ sysMenu:addMenuItem(
     'Main Game',
     function()
 		if GameState ~= "menu" then
+			minigame = nil
+			_minigame_env = nil	
 			pcall(minigame_cleanup)
 			menu_initialized = nil
         	GameState = "menu"
@@ -467,6 +468,8 @@ sysMenu:addMenuItem(
 sysMenu:addMenuItem(
 	'bonus games',
 	function()
+		minigame = nil
+		_minigame_env = nil	
 		pcall(minigame_cleanup)
 		menu_initialized = nil
 		GameState = "bonus menu"
@@ -481,7 +484,7 @@ sysMenu:addMenuItem(
 		GameState = "credits"
 	end
 )
---[[
+--[[ OPTIONAL DEBUGGING MENU OPTION TO CHOOSE MINIGAME:
 sysMenu:addOptionsMenuItem("game:", minigame_list, 
 	function(selected_minigame)
 		DEBUG_GAME = selected_minigame
