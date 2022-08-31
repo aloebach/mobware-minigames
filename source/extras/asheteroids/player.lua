@@ -5,10 +5,10 @@ import 'extras/asheteroids/vectorsprite'
 Player = {}
 Player.__index = Player
 
-local bulletspeed = 16
-local maxspeed = 12
-local turnspeed = 8
-local thrustspeed = 0.6
+local bulletspeed = 10
+local maxspeed = 8
+local turnspeed = 6
+local thrustspeed = 0.3
 
 --> Initialize sound effects
 local laser_noise = playdate.sound.sampleplayer.new('extras/asheteroids/sounds/laserShoot')

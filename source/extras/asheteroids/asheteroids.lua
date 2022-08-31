@@ -6,7 +6,7 @@ import 'extras/asheteroids/player'
 
 local gfx = playdate.graphics
 
-playdate.display.setRefreshRate( 20 )
+playdate.display.setRefreshRate( 30 )
 
 -- initialize font
 local asheteroids_font = gfx.font.new('extras/asheteroids/font/asheteroids_white')
@@ -17,7 +17,7 @@ function hypot(x,y)
 end
 
 -- local variables
-local aspeed = 3
+local aspeed = 2
 --local acount = 5
 local lives = 3
 local STARGING_NUM_OF_ASTEROIDS = 5
@@ -134,7 +134,7 @@ function asheteroids.update()
 			player.thrust[1]:remove()
 			player.thrust[2]:remove()
 			setup_player()
-			player.invincibility = 25
+			player.invincibility = 40
 			
 			-- update player's lives in UI
 			if lives < 1 then life1:setVisible(false) end
@@ -172,7 +172,7 @@ function asheteroids.AButtonDown()	if gamestate == "play" then player:shoot() en
 
 function levelCleared() 
 	print("LEVEL CLEAR!")
-	player.invincibility = 25
+	player.invincibility = 40
 	number_of_asteroids += 1 -- increase difficulty by spawning more astroids with each level
 	setup_asteroids() 
 end

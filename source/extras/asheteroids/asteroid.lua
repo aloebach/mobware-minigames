@@ -45,9 +45,10 @@ function Asteroid:new()
 			
 			-- push away from the ship
 			local d = hypot(self.x - player.x, self.y - player.y)
-			dx += 2 * (self.x - player.x) / d
-			dy += 2 * (self.y - player.y) / d
-			
+			--dx += 2 * (self.x - player.x) / d
+			--dy += 2 * (self.y - player.y) / d
+			dx += 1 * (self.x - player.x) / d
+			dy += 1 * (self.y - player.y) / d			
 			self:setLevel(self.size-1)
 			self:setVelocity(dx, dy, self.da + math.random(100) / 200.0 - 0.25)
 
