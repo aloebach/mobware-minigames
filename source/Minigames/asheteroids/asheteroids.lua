@@ -15,7 +15,6 @@ function hypot(x,y)
 	return math.sqrt(x*x+y*y)
 end
 
---local aspeed = 3
 local aspeed = 2
 local acount = 5
 
@@ -52,7 +51,7 @@ player:setStrokeColor(gfx.kColorWhite)
 player.wraps = 1
 player:addSprite()
 
---setup()  --> moved to main update loop so that game is only started after the initial prompt
+setup()
 
 gfx.setColor(gfx.kColorBlack)
 gfx.fillRect(0, 0, 400, 240)
@@ -73,15 +72,22 @@ function asheteroids.update()
 			random_shake_y = math.random(-6,6)
 			playdate.display.setOffset(random_shake_x, random_shake_y)
 			frame_counter += 1
-			print(frame_counter)
 			playdate.wait(0.05)
 		end
 		-- once frame counter hits its threshold reset screen and return 0 
 		playdate.display.setOffset(0,0)
+		gfx.drawText("GAME OVER",139,100)
+		playdate.wait(1500)
 		return 0
 	end
 	
 	if score >= 10 then
+		local victory_text = "NEW HIGH SCORE!"
+		local text_width, text_height = gfx.getTextSize(victory_text)
+		local centered_x = (400 - text_width) / 2 -- this should put the minigame name in the center of the 
+		gfx.drawText(score,10,10)
+		gfx.drawTextAligned(victory_text,centered_x,60)
+		playdate.wait(1500)		
 		return 1
 	end
 
@@ -91,7 +97,6 @@ function asheteroids.update()
 		
 		-- if player shoots a bullet then start game
 		if playdate.buttonJustPressed("A") or playdate.buttonJustPressed("B") then
-			setup()
 			gamestate = "play"
 			mobware.AbuttonIndicator.stop()
 			mobware.DpadIndicator.stop()
@@ -111,8 +116,9 @@ function asheteroids.leftButtonUp()	turn = 0; player:turn(turn)	end
 function asheteroids.rightButtonDown()	turn += 1; player:turn(turn)	end
 function asheteroids.rightButtonUp()	turn = 0; player:turn(turn)	end
 
-function asheteroids.upButtonDown()	player:startThrust()	end
-function asheteroids.upButtonUp()		player:stopThrust()	end
+-- DISABLING THRUSTER FOR MINIGAME
+--function asheteroids.upButtonDown()	player:startThrust()	end
+--function asheteroids.upButtonUp()		player:stopThrust()	end
 function asheteroids.AButtonDown()		player:shoot()	end
 
 function levelCleared() setup() end

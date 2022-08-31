@@ -5,16 +5,16 @@ import 'Minigames/asheteroids/vectorsprite'
 Player = {}
 Player.__index = Player
 
-local bulletspeed = 16
---local maxspeed = 12
-local maxspeed = 6
-local turnspeed = 8
-local thrustspeed = 0.6
+local bulletspeed = 10
+local maxspeed = 8
+local turnspeed = 9
+local thrustspeed = 0.3
 
 --> Initialize sound effects
 local laser_noise = playdate.sound.sampleplayer.new('Minigames/asheteroids/sounds/laserShoot')
 laser_noise:setVolume(0.5)
 local explosion_noise = playdate.sound.sampleplayer.new('Minigames/asheteroids/sounds/explosion')
+local thruster_noise = playdate.sound.sampleplayer.new('Minigames/asheteroids/sounds/thruster')
 
 function Player:new()
 	local self = VectorSprite:new({4,0, -4,3, -2,0, -4,-3, 4,0})
@@ -45,7 +45,7 @@ function Player:new()
 	end
 
 	function self:hit(asteroid)
-		print("hit!")
+		thruster_noise:stop()
 		explosion_noise:play(4, 2)
 		player_hit = true
 	end
@@ -96,11 +96,13 @@ function Player:new()
 	function self:startThrust()
 		self.thrust[self.thrustframe]:setVisible(true)
 		self.thrusting = 1
+		thruster_noise:play(1)
 	end
 
 	function self:stopThrust()
 		self.thrust[self.thrustframe]:setVisible(false)
 		self.thrusting = 0
+		thruster_noise:stop()
 	end
 
 	return self
