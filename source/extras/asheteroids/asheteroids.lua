@@ -20,8 +20,6 @@ end
 local aspeed = 2
 local lives = 3
 local new_hi_score
---local hi_score_text
---local hi_score_text_x
 
 local STARTING_NUM_OF_ASTEROIDS = 5
 local number_of_asteroids = STARTING_NUM_OF_ASTEROIDS
@@ -31,7 +29,7 @@ score = 0
 gamestate = "play" 
 
 -- reading high score from memory
-local _status, data_read = pcall(playdate.datastore.read, "asheteroids_high_score")
+local _status, data_read = pcall(playdate.datastore.read, "asheteroids_data")
 if data_read then 
 	hi_score = data_read["hi_score"]
 else
@@ -145,7 +143,7 @@ function asheteroids.update()
 
 				-- save hi score to disc
 				local hi_score_table = {hi_score = hi_score}
-				playdate.datastore.write(hi_score_table, "asheteroids_high_score")
+				playdate.datastore.write(hi_score_table, "asheteroids_data")
 			else
 				new_hi_score = nil
 			end
