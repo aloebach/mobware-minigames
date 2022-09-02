@@ -7,7 +7,7 @@ Player.__index = Player
 
 local bulletspeed = 10
 local maxspeed = 8
-local turnspeed = 6
+local turnspeed = 8
 local thrustspeed = 0.3
 
 --> Initialize sound effects

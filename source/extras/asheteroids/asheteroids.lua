@@ -19,12 +19,24 @@ end
 -- local variables
 local aspeed = 2
 local lives = 3
+local new_hi_score
+--local hi_score_text
+--local hi_score_text_x
+
 local STARTING_NUM_OF_ASTEROIDS = 5
 local number_of_asteroids = STARTING_NUM_OF_ASTEROIDS
 
 -- global variables
 score = 0
 gamestate = "play" 
+
+-- reading high score from memory
+local _status, data_read = pcall(playdate.datastore.read, "asheteroids_high_score")
+if data_read then 
+	hi_score = data_read["hi_score"]
+else
+	hi_score = 0
+end
 
 function setup_lives()
 	-- icons showing player's lives
@@ -125,6 +137,19 @@ function asheteroids.update()
 			player.thrust[1]:remove()
 			player.thrust[2]:remove()
 			player:remove()
+			
+			if score > hi_score then
+				print("new hi score!")
+				hi_score = score
+				new_hi_score = true
+
+				-- save hi score to disc
+				local hi_score_table = {hi_score = hi_score}
+				playdate.datastore.write(hi_score_table, "asheteroids_high_score")
+			else
+				new_hi_score = nil
+			end
+			
 		else
 			gamestate = "play" 
 
@@ -143,6 +168,9 @@ function asheteroids.update()
 		
 	elseif gamestate == "game_over" then
 		gfx.drawText("GAME OVER",139,100)
+		gfx.drawTextAligned("HIGH SCORE " .. hi_score ,200, 10, kTextAlignment.center)
+		if new_hi_score then gfx.drawTextAligned("NEW HIGH SCORE!",200, 35, kTextAlignment.center) end
+		
 		if playdate.buttonIsPressed("B") then 
 			lives = 3
 			life1:setVisible(true)
