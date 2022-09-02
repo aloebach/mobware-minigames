@@ -1,7 +1,0 @@
-name=A Sketchy Etcher
-author=Shaun Inman
-description=Based on Drew-Lo’s original idea
-bundleID=game.pulp.ShaunInman.ASketchyEtcher
-version=1
-imagePath=launcher/
-launchSoundPath=launcher/
