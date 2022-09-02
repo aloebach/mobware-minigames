@@ -45,7 +45,7 @@ gfx.setFont(scribble_font)
 
 -- load high score
 function read_high_score()
-	local scoreFile = playdate.file.open("high_score.txt", playdate.file.kFileRead)
+	local scoreFile = playdate.file.open("problem_trolley_data.txt", playdate.file.kFileRead)
 	high_score = tonumber(scoreFile:readline())
 	scoreFile:close()
 end
@@ -194,7 +194,7 @@ function problem_trolley.update()
 		-- save high score
 		if score > high_score then
 			high_score = score
-			local scoreFile = playdate.file.open("high_score.txt", playdate.file.kFileWrite)
+			local scoreFile = playdate.file.open("problem_trolley_data.txt", playdate.file.kFileWrite)
 			scoreFile:write(tostring(high_score))
 			scoreFile:close()
 		end
