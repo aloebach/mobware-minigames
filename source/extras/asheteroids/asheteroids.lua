@@ -18,10 +18,9 @@ end
 
 -- local variables
 local aspeed = 2
---local acount = 5
 local lives = 3
-local STARGING_NUM_OF_ASTEROIDS = 5
-local number_of_asteroids = STARGING_NUM_OF_ASTEROIDS
+local STARTING_NUM_OF_ASTEROIDS = 5
+local number_of_asteroids = STARTING_NUM_OF_ASTEROIDS
 
 -- global variables
 score = 0
@@ -80,7 +79,7 @@ function setup()
 	gfx.sprite.removeAll()
 	
 	-- reset the number of asteroids to spawn
-	number_of_asteroids = STARGING_NUM_OF_ASTEROIDS
+	number_of_asteroids = STARTING_NUM_OF_ASTEROIDS
 	
 	setup_asteroids()
 	setup_player()

@@ -43,7 +43,7 @@ local score
 local money
 local GAME_WINNING_SCORE = 20 --score that, when reached, will trigger the ending and show credits
 local threshold_for_unlocking_bonus_game = 10  -- minimum score player has to have before being offered unlockables
-local chance_of_unlocking_bonus_game = 25 -- percentage chance player will be offered an unlockable after completing minigame
+local chance_of_unlocking_bonus_game = 25 -- percentage chance player will be offered an unlockable after successfully completing minigame
 
 -- generate table of minigames and bonus games
 minigame_list = generate_minigame_list("Minigames/")
@@ -68,6 +68,11 @@ local main_theme = playdate.sound.fileplayer.new('sounds/mobwaretheme')
 local victory_music = playdate.sound.fileplayer.new('sounds/victory_v2')
 local defeat_music = playdate.sound.fileplayer.new('sounds/defeat')
 
+-- initialize sound effects for menu
+local click_sound_1 = playdate.sound.sampleplayer.new('sounds/click1')
+local click_sound_2 = playdate.sound.sampleplayer.new('sounds/click2')
+local select_sound = playdate.sound.sampleplayer.new('sounds/select')
+local swish_sound = playdate.sound.sampleplayer.new('sounds/swish')
 
 function initialize_metagame()
 	score = 0
@@ -155,7 +160,7 @@ function playdate.update()
 			gfx.sprite.update() 
 			
 			-- update game selected and onscreen menu (either via crank of D-pad)
-			local menu_movement =  playdate.getCrankTicks(1)
+			local menu_movement =  playdate.getCrankTicks(4)
 			if playdate.buttonJustPressed("up") then menu_movement = -1 end
 			if playdate.buttonJustPressed("down") then menu_movement = 1 end		
 			if menu_movement ~= 0 then
@@ -166,21 +171,26 @@ function playdate.update()
 					bonus_game_number = #unlocked_bonus_games_list 
 				end
 				
-				-- animate on-screen Playdate sprite's crank
+				-- animate on-screen Playdate sprite's crank and play sound effect
 				if menu_movement > 0 then 
 					pd_sprite:changeState("crank")
+					click_sound_1:play(1) 
 				else
 					pd_sprite:changeState("reverse_crank")
+					click_sound_2:play(1) 
 				end
 				
-				-- display launcher card for selected bonus game
-				-- TO-DO: replace static card with card.gif like I do in the credits?
-				local bonus_game_card = gfx.image.new('extras/' .. unlocked_bonus_games_list[bonus_game_number] .. '/card')
-				launcher_sprite:setImage(bonus_game_card)
+				-- display launcher card animation for selected bonus game
+				launcher_sprite:remove()
+				local launcher_image_path = 'extras/' .. unlocked_bonus_games_list[bonus_game_number] .. '/card'
+				launcher_sprite = AnimatedSprite.new( gfx.imagetable.new(launcher_image_path) )
+				launcher_sprite:addState("animate", nil, nil, {tickStep = 2}, true)
+				launcher_sprite:moveTo(201, 77)
 			end
 			
 			-- if player presses "A", then load bonus game
 			if playdate.buttonJustPressed("A") then
+				select_sound:play(1)
 				pd_sprite:changeState("transition_out")
 			end
 			
@@ -200,13 +210,15 @@ function playdate.update()
 			-- animation for on-screen Playdate sprite
 			playdate_image_table = gfx.imagetable.new("images/playdate")
 			pd_sprite = AnimatedSprite.new( playdate_image_table )
-			pd_sprite:addState("transition_in", 1, 5, {tickStep = 2, nextAnimation = "idle"}, true)
-			pd_sprite:addState("transition_out", 1, 5, {tickStep = 2, nextAnimation = "loading", reverse = true})
+			pd_sprite:addState("transition_in", 1, 8, {tickStep = 1, nextAnimation = "idle"}, true)
+			pd_sprite:addState("transition_out", 1, 8, {tickStep = 1, nextAnimation = "loading", reverse = true})
 			pd_sprite:addState("loading", 1, 1)
-			pd_sprite:addState("crank", 7, 13, {tickStep = 1, nextAnimation = "idle"})
-			pd_sprite:addState("reverse_crank", 7, 13, {tickStep = 1, reverse = true, nextAnimation = "idle"})
-			pd_sprite:addState("idle", 6, 6, {tickStep = 3})	
+			pd_sprite:addState("crank", 8, 15, {tickStep = 1, nextAnimation = "idle"})
+			pd_sprite:addState("reverse_crank", 8, 15, {tickStep = 1, reverse = true, nextAnimation = "idle"})
+			pd_sprite:addState("idle", 8, 8, {tickStep = 3})	
 			pd_sprite:moveTo(250, 120)
+			
+			swish_sound:play(1)
 						
 			bonus_game_number = 1
 			menu_initialized = 1
@@ -219,10 +231,11 @@ function playdate.update()
 				table.insert( unlocked_bonus_games_list, _bonus_game )
 			end
 
-			-- add launcher card for sprite
-			launcher_sprite = gfx.sprite.new(  gfx.image.new('extras/' .. unlocked_bonus_games_list[bonus_game_number] .. '/card') )
-			launcher_sprite:moveTo(200, 78)
-			launcher_sprite:add()
+			-- add launcher card for selected bonus game
+			local launcher_image_path = 'extras/' .. unlocked_bonus_games_list[bonus_game_number] .. '/card'
+			launcher_sprite = AnimatedSprite.new( gfx.imagetable.new(launcher_image_path) )
+			launcher_sprite:addState("animate", nil, nil, {tickStep = 2}, true)
+			launcher_sprite:moveTo(201, 77)
 			
 			-- set playdate's default refresh rates so bonus games always run at a constant speed
 			playdate.display.setRefreshRate(30)
