@@ -13,9 +13,9 @@ import 'Minigames/key_to_success/Bar'
 local gfx <const> = playdate.graphics
 
 -- parameters to determine game's difficulty level
-local CRANK_POWER = 14	-- represents how much cranking will lift the bars
 local NUMBER_OF_BARS = 6 -- the number of bars generated that our key has to navigate through
-local WALKING_SPEED = 2 -- how fast the key moves across the screen
+--local WALKING_SPEED = 2 -- how fast the key moves across the screen
+local WALKING_SPEED = 2.5 -- how fast the key moves across the screen
 
 -- load images / sprite-sheets animation for on-screen sprites
 local key_spritesheet = gfx.imagetable.new("Minigames/key_to_success/images/key")
@@ -36,7 +36,7 @@ key:addState("hit", 11, 17, {tickStep = 1, nextAnimation = "game_over"}, true)
 key:addState("game_over", 13, 17, {tickStep = 1, loop = false}, true)
 
 key:changeState('idle') --start with key in idle state
-key:moveTo(20,220)
+key:moveTo(0,220)
 key:setZIndex(1)
 key:setCollideRect(2,10,30,20)
 
@@ -49,22 +49,24 @@ for i = 1, NUMBER_OF_BARS do
 	x += 40 -- make the bars 40 pixels apart
 end
 
+local crank_x = 0
+
 --> Initialize music / sound effects
 local click_noise = playdate.sound.sampleplayer.new('Minigames/key_to_success/sounds/click')
 local scream_noise = playdate.sound.sampleplayer.new('Minigames/key_to_success/sounds/scream')
 local victory_sound = playdate.sound.sampleplayer.new('Minigames/key_to_success/sounds/alright')
 
 -- set initial gamestate and start prompt for player to hit the B button
-gamestate = 'play'
+local gamestate = 'play'
 mobware.crankIndicator.start()
-mobware.DpadIndicator.start()
-local game_timer = playdate.frameTimer.new( 1 * 20, function() mobware.DpadIndicator.stop() end ) -- removes d-pad indicator after 1 second (at 20fps)
 
 
 function key_to_success.update()
 
 	-- updates all sprites
-	gfx.sprite.update() 
+	gfx.sprite.update()
+	
+	if key.x < 60 then	mobware.print("→", 100,200) end
 	
 	-- update timer
 	playdate.frameTimer.updateTimers()
@@ -78,36 +80,24 @@ function key_to_success.update()
 				gamestate = 'defeat' 
 				key:changeState('hit')
 			end
-			
 		end
 		
-		-- if the player has cranked sufficiently, then raise bars according to what is pressed on the D-pad
-		if playdate.getCrankTicks(12) >0  then
-			-- check if D-pad directions are down, and if so.. move the relevant bar
-			for _i, bar in ipairs(bars) do
-				-- raise bar if it's corresponding direction on the D-pad is pressed:
-				
-				-- for bars with a direction specified check if that button is pressed 				
-				if playdate.buttonIsPressed("up") or playdate.buttonIsPressed("down") or playdate.buttonIsPressed("left") or playdate.buttonIsPressed("right") then -- for bars with a direction specified check if that button is pressed 				
-					if playdate.buttonIsPressed(bar.orientation) then
-						bar:moveTo(bar.x, bar.y - CRANK_POWER)
-					end
-				-- bars with no orientation will only be raised if no inputs are given on the D-pad
-				elseif bar.orientation == nil then
-					bar:moveTo(bar.x, bar.y - CRANK_POWER)
-				end
-			end		
-		end
+		--[[ CURRENTLY IN CRANK CALLBACK FUNCTION
+		-- update position of bars			
+		change, acceleratedChange = playdate.getCrankChange()	
+		crank_x = crank_x + change
+		for _i, bar in ipairs(bars) do
+			local bar_y = 120 - 30*(1 + math.sin((bar.x - crank_x)/40) )
+			bar:moveTo(bar.x, bar_y)
+		end	
+		]]
 		
 		-- win condition: the key character makes it to the end of the screen
 		if key.x > 416 then gamestate = 'victory' end
 
 
 	elseif gamestate == 'victory' then
-		-- The "victory" gamestate will simply show the victory animation and then end the minigame
 
-		-- display image indicating the player has won
-		--mobware.print("ending unlocked!",100, 70)
 		victory_sound:play(1)
 
 		playdate.wait(2000)	-- Pause 2s before ending the minigame
@@ -120,7 +110,7 @@ function key_to_success.update()
 		if key.currentState == "game_over" then
 			scream_noise:play(1)
 			-- wait another 1 second then exit minigame
-			playdate.wait(1000)	-- Pause 2s before ending the minigame			
+			playdate.wait(1000)
 			return 0	-- return 0 to indicate that the player has lost and exit the minigame 
 		end
 
@@ -131,7 +121,14 @@ end
 
 function key_to_success.cranked(change, acceleratedChange)
 	-- When crank is turned, play clicking noise
-	click_noise:play(1)
+	click_noise:play(1)	
+
+	-- update position fo bars
+	crank_x = crank_x + change
+	for _i, bar in ipairs(bars) do
+		local bar_y = 120 - 30*(1 + math.sin((bar.x - crank_x)/40) )
+		bar:moveTo(bar.x, bar_y)
+	end	
 	
 	-- Once crank is turned, turn off crank indicator
 	if mobware.crankIndicator then mobware.crankIndicator:stop() end
