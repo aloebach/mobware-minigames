@@ -2,10 +2,12 @@
 	Author: Andrew Loebach
 
 	"Dusty Cartridge" Minigame for Mobware Minigames
+	
+	TO-DO: replace timer with frame timer so difficulty scales as the player progresses
 ]]
 
 -- Define name for minigame package
-dusty_cartridge = {}
+local dusty_cartridge = {}
 
 -- import the classes for our movable objects
 import 'Minigames/dusty_cartridge/Dust'
@@ -34,7 +36,8 @@ mobware.MicIndicator.start()
 -- initialize timer & game variables
 BLOW_THRESHOLD = 0.008
 local gamestate = 'start'
-local timer = playdate.timer.new(8000)
+local timer = playdate.frameTimer.new(8 * 20) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
+
 
 -- ADd dust sprites along the cartridge connector line: (115,195) -> (208, 156)
 local _x = 115
@@ -71,7 +74,8 @@ function dusty_cartridge.update()
 	gfx.sprite.update() -- updates all sprites
 
 	-- update timer
-	playdate.timer.updateTimers()
+	--playdate.timer.updateTimers()
+	playdate.frameTimer.updateTimers()
 
 
 
@@ -79,7 +83,7 @@ function dusty_cartridge.update()
       
         mobware.print("Blow in the cartridge!", 35, 30)
 	
-		if mic_input > BLOW_THRESHOLD or timer.currentTime > 2000 then
+		if mic_input > BLOW_THRESHOLD or timer.frame > 40 then
 			-- after input is detected from mic, remove prompt and move into "play" state
 			mobware.MicIndicator.stop()
 			gamestate = 'play' 
@@ -97,8 +101,8 @@ function dusty_cartridge.update()
 				thumb_image:addSprite()
 				playdate.sound.micinput.stopListening()
 
-		elseif timer.currentTime > 4000 then 
-				-- if player doesn't blow off dust in time then trigger defeat aniation 
+		elseif timer.frame > 100 then 
+				-- if player doesn't blow off dust in time then trigger defeat animation 
 				background:setImage(gfx.image.new("Minigames/dusty_cartridge/images/NES_tv-game"))
 				local tv_static_spritesheet = gfx.imagetable.new("Minigames/dusty_cartridge/images/NES_tv-static")
 				tv_static = AnimatedSprite.new( tv_static_spritesheet )
@@ -118,13 +122,13 @@ function dusty_cartridge.update()
 	elseif gamestate == 'victory' then
 		thumb_image:moveTo( thumb_image.x , thumb_image.y - 1)
 
-		if timer.currentTime >= 6000 then
+		if timer.frame >= 160 then
 			game_theme_music:stop()
 			return 1
 		end
 
 
-	elseif gamestate == 'defeated' and timer.currentTime >= 6000 then
+	elseif gamestate == 'defeated' and timer.frame >= 120 then
 		static_noise:stop()
 		return 0
 	end
