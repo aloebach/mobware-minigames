@@ -224,6 +224,13 @@ function quick_draw.update()
 		end
 	-- start flagTimer, play cactus animation once flagTimer is 0
 	elseif gamestate == 'waiting' then
+		
+		-- if the player hits the button before the flag is waved, don't allow them to register another button press for ~1 second
+		if playdate.buttonJustPressed(playdate.kButtonA) then
+			print("OOPS! too quick on the draw!")
+			--penaltyTimer = playdate.frameTimer.new(1000)
+			penaltyTimer = playdate.frameTimer.new(2 * 20, function(penaltyTimer) penaltyTimer:remove() end) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
+		end
 	
 		if (flagTimer.value == 0 and not cactusPlayed) then
 			flagWaveSound:play()
@@ -233,22 +240,27 @@ function quick_draw.update()
 
 		if (cactusSprite.currentState == 'cactus_done') then
 			gamestate = 'flag-waved'
-			local randomNumber = math.random(20, 60) -- between 1s and 3s at 20fps 
+			local randomNumber = math.random(10, 40) -- between 0.5s and 2s at 20fps 
 			enemyShootTimer = playdate.frameTimer.new(randomNumber, randomNumber, 0)
 			enemyShootTimer:start()
 		end
 	elseif gamestate == 'flag-waved' then
 		-- show button prompt sprite
 		if (buttonPromptShowing == false) then
-			buttonToPressIndicator:start(buttonValueMap[buttonValue])
+			--buttonToPressIndicator:start(buttonValueMap[buttonValue])
+			mobware.AbuttonIndicator:start()
 			buttonPromptShowing = true
 		end
 		
 		-- if wrong button is pressed, play animation and move to defeat gamestate
-		if playdate.buttonIsPressed(buttonValueMap[wrongButtonValue]) then
+		--if playdate.buttonIsPressed(buttonValueMap[wrongButtonValue]) then
+			
+		--[[
+		elseif playdate.buttonIsPressed(playdate.kButtonA) then
+			
 			if (buttonPromptShowing) then
 				buttonPromptShowing = false
-				buttonToPressIndicator:stop()
+				mobware.AbuttonIndicator:stop()
 			end
 			gunfireSound:play()
 			enemySprite:changeState('enemy_play')
@@ -256,26 +268,45 @@ function quick_draw.update()
 		
 			gamestate = 'defeat'
 		end
+		]]		
 
 		-- if correct button is pressed, shoot enemy cowboy
-		if (playdate.buttonIsPressed(buttonValueMap[buttonValue])) then
-			-- stop the prompt move to next gamestate
-			buttonToPressIndicator:stop()
-			gunfireSound:play()
-			cowboySprite:changeState('cowboy_play')
-			enemySprite:changeState('enemy_dead')
-			gamestate = 'victory'
+		--if (playdate.buttonIsPressed(buttonValueMap[buttonValue])) then
+		if playdate.buttonIsPressed(playdate.kButtonA) then
+			
+			-- if the player hit the button too early, don't allow 
+			if penaltyTimer and (penaltyTimer.frame < penaltyTimer.duration)  then
+				print("you can't shoot since you're in the penalty box!")
+			
+			else
+				-- stop the prompt move to next gamestate
+				--buttonToPressIndicator:stop()
+				mobware.AbuttonIndicator:stop()
+				gunfireSound:play()
+				cowboySprite:changeState('cowboy_play')
+				enemySprite:changeState('enemy_dead')
+				-- knock over enemy sprite:
+				enemySprite:setRotation(90)
+				local _width, sprite_height = enemySprite:getSize()
+				enemySprite:moveTo(enemySprite.x, enemySprite.y+sprite_height/2)
+				gamestate = 'victory'
+			end
 		end
 
 		-- if enemy shoot timer gets to 0, play animation and move to defeat gamestate
 		if (not playdate.buttonIsPressed(buttonValueMap[buttonValue]) and enemyShootTimer.value == 0) then
 			if (buttonPromptShowing) then
 				buttonPromptShowing = false
-				buttonToPressIndicator:stop()
+				--buttonToPressIndicator:stop()
+				mobware.AbuttonIndicator:stop()
 			end
 			gunfireSound:play()
 			enemySprite:changeState('enemy_play')
 			cowboySprite:changeState('cowboy_dead')
+			-- knock over enemy sprite:
+			cowboySprite:setRotation(-90)
+			local _width, sprite_height = cowboySprite:getSize()
+			cowboySprite:moveTo(cowboySprite.x, cowboySprite.y+sprite_height/2)
 
 			gamestate = 'defeat'
 		end
@@ -284,7 +315,8 @@ function quick_draw.update()
 	elseif gamestate == 'victory' then
 		if (buttonPromptShowing) then
 			buttonPromptShowing = false
-			buttonToPressIndicator:stop()
+			--buttonToPressIndicator:stop()
+			mobware.AbuttonIndicator:stop()
 		end
 
 		mobware.print("Yee haw!", 90, 70)
