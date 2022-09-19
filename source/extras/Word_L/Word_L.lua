@@ -69,8 +69,6 @@ local text_y = 40 * row - 1
 playdate.keyboard.show()
 function playdate.keyboard.textChangedCallback()
 	word = string.upper(playdate.keyboard.text)
-	--print(word)
-	--if #word >= 5 then gamestate = 'text_entered' end
 end
 
 
@@ -103,8 +101,7 @@ function Word_L.update()
 
 	-- display letters entered by the player	
 	gfx.setFont(mobware_font_L) 
-	-- character X = 38 * word - 8
-	-- character Y = 40 * row - 1
+
 	if #word > 0 then gfx.drawTextAligned( string.sub(word,1,1), 30, text_y, kTextAlignment.center) end
 	if #word > 1 then gfx.drawTextAligned( string.sub(word,2,2), 68, text_y, kTextAlignment.center) end
 	if #word > 2 then gfx.drawTextAligned( string.sub(word,3,3), 106, text_y, kTextAlignment.center) end
@@ -158,9 +155,22 @@ function Word_L.update()
 			if string.sub(word,i,i) == string.sub(target_word,i,i) then
 				print("letter",i,"is a match (", string.sub(word,i,i),")")
 				draw_outline(38 * i - 7,_y)
+				
 			elseif string.find(target_word, string.sub(word,i,i) ) then
 				print("letter",i,"found in target word")
-				draw_dither(38 * i - 7,_y, "thin")
+				-- count the number of times this letter occurs in the target word
+					--> count how many times the letter has been guessed and how many future matches for the letter 
+				local total_letter_count = count_occurrences( string.sub(word,i,i), target_word )
+				local current_letter_count = count_occurrences( string.sub(word,i,i), string.sub(word,1,i) )
+				local future_matches = check_future_match(string.sub(word,i,i), string.sub(word,i+1,5), string.sub(target_word,i+1,5) )
+				
+				if current_letter_count + future_matches > total_letter_count then
+					print("letter is in word, but not this many times!")
+					draw_dither(38 * i - 7,_y, "thick")
+				else
+					draw_dither(38 * i - 7,_y, "thin")
+				end
+
 			else  -- if no match at all then color with thick dithering
 				print("letter",i,"not found in word")
 				draw_dither(38 * i - 7,_y, "thick")
@@ -257,6 +267,27 @@ function draw_dither(x,y, ditherType)
 	letters_on_screen:setImage(canvas)
 end
 
+function count_occurrences(search_char, string )
+	-- counts the number of occurrences of search_char in string
+	local counter = 0
+	for _letter = 1, #string do
+		if search_char == string.sub(string,_letter,_letter)  then
+			counter += 1
+		end
+	end
+	return counter
+end
+
+function check_future_match(letter, string1, string2 )
+	-- counts the number of times a letter is the same position in two strings
+	local counter = 0
+	for _i = 1, #string2 do
+		if letter == string.sub(string1,_i,_i) and letter == string.sub(string2,_i,_i) then
+			counter += 1
+		end
+	end
+	return counter
+end
 
 -- Minigame package should return itself
 return Word_L
