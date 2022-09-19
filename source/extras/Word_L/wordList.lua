@@ -23,9 +23,7 @@ wordList = {
 	'quick',
 	'image',
 	'smash',
-	'fonts',
 	'extra',
-	'words',
 	'level',
 	'group',
 	'patch',
@@ -48,10 +46,10 @@ wordList = {
 	'magic',
 	'pitch',
 	'score',
-	'credit',
 	'bonus',
 	'fight',
 	'story',
 	'audio',
-	'input'
+	'input',
+	'demon'
 }
