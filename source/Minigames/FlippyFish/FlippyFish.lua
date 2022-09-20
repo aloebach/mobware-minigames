@@ -22,7 +22,8 @@ gfx.fillRect(0, 0, screenWidth, screenHeight)
 local kGameState = {initial, ready, playing, paused, over}
 local currentState = kGameState.initial
 
-local kGameInitialState, kGameGetReadyState, kGamePlayingState, kGamePausedState, kGameOverState = 0, 1, 2, 3, 4
+--local kGameInitialState, kGameGetReadyState, kGamePlayingState, kGamePausedState, kGameOverState = 0, 1, 2, 3, 4
+local kGameInitialState, kGameGetReadyState, kGamePlayingState, kGamePausedState, kGameOverState, kVictoryState = 0, 1, 2, 3, 4, 5
 --local gameState = kGameInitialState
 local gameState = kGameGetReadyState
 
@@ -50,6 +51,11 @@ local flippy = Fish()
 
 local ticks = 0
 local buttonDown = false
+local GAME_WINNING_SCORE = 2
+
+-- initialize sounds
+local pling_sound = playdate.sound.sampleplayer.new('Minigames/FlippyFish/sounds/pling')
+local death_sound = playdate.sound.sampleplayer.new('Minigames/FlippyFish/sounds/dead_fish')
 
 -- start button indicator
 mobware.AbuttonIndicator.start()
@@ -57,6 +63,7 @@ mobware.AbuttonIndicator.start()
 
 local function gameOver()
 
+	death_sound:play(1)
 	gameState = kGameOverState
 
 	titleSprite:setImage(gfx.image.new('Minigames/FlippyFish/images/gameOver'))
@@ -89,6 +96,9 @@ end
 function FlippyFish.update()
 	
 	ticks = ticks + 1
+	
+	-- update frame timer
+	playdate.frameTimer.updateTimers()
 
 	if gameState == kGameInitialState then
 
@@ -141,10 +151,11 @@ function FlippyFish.update()
 			potentialSeaweed.visible = true
 		end
 		
-		--Drew's victory condition:
+		--[[Drew's victory condition:
 		if score.score >= 2 then
 			return 1
 		end
+		]]
 		
 	elseif gameState == kGameOverState then
 		
@@ -154,6 +165,10 @@ function FlippyFish.update()
 		
 		playdate.wait(1000)
 		return 0
+		
+	elseif gameState == kVictoryState then
+		return 1
+
 	end
 
 end
@@ -175,6 +190,11 @@ function flippy:collisionResponse(other)
 				
 				score:addOne()
 				seaweed.pointAwarded = true
+				pling_sound:play(1)
+				-- check if we've hit the winning score, and if so, go to victory state after ~1s
+				if score.score > GAME_WINNING_SCORE then
+					game_timer = playdate.frameTimer.new( 20, function() gameState = kVictoryState end )
+				end
 								
 			elseif (other == seaweed.seaweedTop and flippy:alphaCollision(seaweed.seaweedTop)) or (other == seaweed.seaweedBottom and flippy:alphaCollision(seaweed.seaweedBottom)) then
 				
