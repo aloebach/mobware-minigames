@@ -19,7 +19,7 @@ gfx.fillRect(0, 0, screenWidth, screenHeight)
 
 -- ! game states
 
-local kGameInitialState, kGameGetReadyState, kGamePlayingState, kGamePausedState, kGameOverState, kVictoryState = 0, 1, 2, 3, 4, 5
+local kGameInitialState, kGameGetReadyState, kGamePlayingState, kGamePausedState, kGameOverState, kShowScoreState = 0, 1, 2, 3, 4, 5
 local gameState = kGameGetReadyState
 
 
@@ -61,6 +61,16 @@ local SPEED_INCREASE_INTERVAL = 2 --> sets how many points the user collects bef
 local frame_rate = MIN_FRAME_RATE
 playdate.display.setRefreshRate(frame_rate)
 
+-- reading high score from memory
+local hi_score = 0
+local new_hi_score
+local hi_score_font = gfx.font.new('extras/FlippyFish/Score/Outfoxies')
+
+local _status, data_read = pcall(playdate.datastore.read, "flippyfish_data")
+if data_read then 
+	hi_score = data_read["hi_score"]
+end
+
 local function gameOver()
 
 	death_sound:play(1)
@@ -68,6 +78,19 @@ local function gameOver()
 
 	titleSprite:setImage(gfx.image.new('extras/FlippyFish/images/gameOver'))
 	titleSprite:setVisible(true)
+	
+	if score.score > hi_score then
+		print("new hi score!")
+		hi_score = score.score
+		new_hi_score = true
+		pling_sound:play(4, 1.5)
+		
+		-- save hi score to disc
+		local hi_score_table = {hi_score = hi_score}
+		playdate.datastore.write(hi_score_table, "flippyfish_data")
+	else
+		new_hi_score = nil
+	end
 	
 	ticks = 0
 end
@@ -155,11 +178,30 @@ function FlippyFish.update()
 		
 		if ticks < 5 then
 			playdate.display.setInverted(ticks % 2)
+		else
+			gameState = kShowScoreState
 		end
 		
-	elseif gameState == kVictoryState then
-		--- THIS SHOULD NEVER TRIGGER
-
+	elseif gameState == kShowScoreState then
+		spritelib.update()	--DELETE THIS LATER!??
+		--- Triggers after GameOverState to show score and high score
+		gfx.setColor(gfx.kColorWhite)
+		gfx.setLineWidth(3)
+		gfx.fillRoundRect(72, 130, 256, 48, 5)
+		gfx.setColor(gfx.kColorBlack)
+		gfx.drawRoundRect(72, 130, 256, 48, 5)
+		gfx.setFont(hi_score_font)
+		gfx.drawTextAligned("HIGH SCORE " .. hi_score, 200, 146, kTextAlignment.center)
+		
+		-- proudly display "NEW" if the player just made a new high score
+		if new_hi_score then
+			if ticks % 20 <= 12 then 
+				gfx.setColor(gfx.kColorBlack)
+				gfx.fillRoundRect(5, 130, 63, 48, 5)
+				gfx.drawTextAligned("NEW", 36, 146, kTextAlignment.center)
+			end
+		end
+		
 	end
 
 end
@@ -228,7 +270,7 @@ function FlippyFish.AButtonDown()
 
 	if gameState == kGameInitialState then
 		buttonDown = true
-	elseif gameState == kGameOverState and ticks > 5  then	-- the ticks thing is just so the player doesn't accidentally restart immediately
+	elseif gameState == kShowScoreState and ticks > 20  then	-- the ticks thing is just so the player doesn't accidentally restart immediately
 		startGame()
 	elseif gameState == kGamePlayingState then
 		flippy:up()		
@@ -238,7 +280,7 @@ end
 function FlippyFish.BButtonDown()
 	if gameState == kGameInitialState then
 		buttonDown = true
-	elseif gameState == kGameOverState and ticks > 5 then
+	elseif gameState == kShowScoreState and ticks > 20 then
 		startGame()
 	elseif gameState == kGamePlayingState then
 		flippy:up()
