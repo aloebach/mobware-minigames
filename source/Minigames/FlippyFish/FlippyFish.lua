@@ -18,10 +18,6 @@ gfx.fillRect(0, 0, screenWidth, screenHeight)
 
 
 -- ! game states
-
-local kGameState = {initial, ready, playing, paused, over}
-local currentState = kGameState.initial
-
 local kGameInitialState, kGameGetReadyState, kGamePlayingState, kGamePausedState, kGameOverState, kVictoryState = 0, 1, 2, 3, 4, 5
 local gameState = kGameGetReadyState
 
