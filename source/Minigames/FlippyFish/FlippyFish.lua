@@ -22,9 +22,7 @@ gfx.fillRect(0, 0, screenWidth, screenHeight)
 local kGameState = {initial, ready, playing, paused, over}
 local currentState = kGameState.initial
 
---local kGameInitialState, kGameGetReadyState, kGamePlayingState, kGamePausedState, kGameOverState = 0, 1, 2, 3, 4
 local kGameInitialState, kGameGetReadyState, kGamePlayingState, kGamePausedState, kGameOverState, kVictoryState = 0, 1, 2, 3, 4, 5
---local gameState = kGameInitialState
 local gameState = kGameGetReadyState
 
 
@@ -151,11 +149,6 @@ function FlippyFish.update()
 			potentialSeaweed.visible = true
 		end
 		
-		--[[Drew's victory condition:
-		if score.score >= 2 then
-			return 1
-		end
-		]]
 		
 	elseif gameState == kGameOverState then
 		
