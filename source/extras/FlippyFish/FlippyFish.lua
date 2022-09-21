@@ -64,7 +64,7 @@ playdate.display.setRefreshRate(frame_rate)
 -- reading high score from memory
 local hi_score = 0
 local new_hi_score
-local hi_score_font = gfx.font.new('extras/FlippyFish/Score/Outfoxies')
+local hi_score_font = gfx.font.new('extras/FlippyFish/Score/FlappyFont')
 
 local _status, data_read = pcall(playdate.datastore.read, "flippyfish_data")
 if data_read then 
@@ -270,7 +270,7 @@ function FlippyFish.AButtonDown()
 
 	if gameState == kGameInitialState then
 		buttonDown = true
-	elseif gameState == kShowScoreState and ticks > 20  then	-- the ticks thing is just so the player doesn't accidentally restart immediately
+	elseif gameState == kShowScoreState and ticks > 40  then	-- the ticks thing is just so the player doesn't accidentally restart immediately
 		startGame()
 	elseif gameState == kGamePlayingState then
 		flippy:up()		
@@ -280,7 +280,7 @@ end
 function FlippyFish.BButtonDown()
 	if gameState == kGameInitialState then
 		buttonDown = true
-	elseif gameState == kShowScoreState and ticks > 20 then
+	elseif gameState == kShowScoreState and ticks > 40 then
 		startGame()
 	elseif gameState == kGamePlayingState then
 		flippy:up()
