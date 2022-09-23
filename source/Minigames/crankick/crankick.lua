@@ -12,6 +12,7 @@ local ballDirY = 0
 
 local shotDelay <const> = 40
 local shotTimer = 0
+local exitTimer = 0
 local shooting = false
 
 local arrowSprite = nil
@@ -208,9 +209,18 @@ function crankick.update()
 		gameSetup(false)
 	end
 
-	if outOfBounds() then
+	if  mode == "play" and outOfBounds() then
+		-- this will cause the game to crash if it is directly followed by game_over, since that calls playdate.wait()
 		missSequence:play()
-		return 0
+		mode = "defeated" 
+	end
+	
+	-- if ball is out of bounds wait ~1s before exiting 
+	if mode == "defeated" then
+		exitTimer += 1
+		if  exitTimer >= 16 then
+			return 0
+		end
 	end
 
 	local scoreString = score.."/"..targetScore
