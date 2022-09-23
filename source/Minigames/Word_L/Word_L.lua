@@ -27,7 +27,7 @@ background:add()
 local cursor_spritesheet = gfx.imagetable.new("Minigames/Word_L/images/cursor")
 local cursor = AnimatedSprite.new( cursor_spritesheet )
 cursor:addState("blink",1,2, {tickStep = 5, loop = true}, true)
-cursor:moveTo(38 * (#word + 1) - 7, 133)  -- move cursor to highlight current space
+cursor:moveTo(38 * (#word + 1) - 7, 173)  -- move cursor to highlight current space
 
 -- start timer	 
 local MAX_GAME_TIME = 10 -- define the time at 20 fps that the game will run betfore setting the "defeat"gamestate
@@ -53,11 +53,11 @@ function Word_L.update()
 	-- display letters entered by the player	
 	gfx.setFont(mobware_font_L) 
 	-- character X = 38 * word - 8
-	if #word > 0 then gfx.drawTextAligned( string.sub(word,1,1), 30, 119, kTextAlignment.center) end
-	if #word > 1 then gfx.drawTextAligned( string.sub(word,2,2), 68, 119, kTextAlignment.center) end
-	if #word > 2 then gfx.drawTextAligned( string.sub(word,3,3), 106, 119, kTextAlignment.center) end
-	if #word > 3 then gfx.drawTextAligned( string.sub(word,4,4), 144, 119, kTextAlignment.center) end
-	if #word > 4 then gfx.drawTextAligned( string.sub(word,5,5), 182, 119, kTextAlignment.center) end
+	if #word > 0 then gfx.drawTextAligned( string.sub(word,1,1), 30, 159, kTextAlignment.center) end
+	if #word > 1 then gfx.drawTextAligned( string.sub(word,2,2), 68, 159, kTextAlignment.center) end
+	if #word > 2 then gfx.drawTextAligned( string.sub(word,3,3), 106, 159, kTextAlignment.center) end
+	if #word > 3 then gfx.drawTextAligned( string.sub(word,4,4), 144, 159, kTextAlignment.center) end
+	if #word > 4 then gfx.drawTextAligned( string.sub(word,5,5), 182, 159, kTextAlignment.center) end
 		
 	-- In the first stage of the minigame
 	if gamestate == 'play' then
@@ -68,7 +68,7 @@ function Word_L.update()
 		end
 		
 		-- display rectangle highlighting the square for the current letter
-		cursor:moveTo(38 * (#word + 1) - 7, 133)  -- move cursor to highlight current space
+		cursor:moveTo(38 * (#word + 1) - 7, 173)  -- move cursor to highlight current space
 		
 		if #word > 4 then
 			-- all letters have been entered, move to next gamestate
@@ -82,7 +82,7 @@ function Word_L.update()
 		cursor:remove()
 		
 		-- score word
-		local _y = 133
+		local _y = 173
 		for i = 1, #word do
 			--check if letter is correct and mark accordingly
 			if string.sub(word,i,i) == string.sub(TARGET_WORD,i,i) then
@@ -99,19 +99,19 @@ function Word_L.update()
 			-- render letters and outlines
 			gfx.sprite.update() 
 			if #word > 0 then
-				gfx.drawTextAligned( string.sub(word,1,1), 30, 119, kTextAlignment.center)
+				gfx.drawTextAligned( string.sub(word,1,1), 30, 159, kTextAlignment.center)
 			end
 			if #word > 1 then
-				gfx.drawTextAligned( string.sub(word,2,2), 68, 119, kTextAlignment.center)
+				gfx.drawTextAligned( string.sub(word,2,2), 68, 159, kTextAlignment.center)
 			end
 			if #word > 2 then
-				gfx.drawTextAligned( string.sub(word,3,3), 106, 119, kTextAlignment.center)
+				gfx.drawTextAligned( string.sub(word,3,3), 106, 159, kTextAlignment.center)
 			end
 			if #word > 3 then
-				gfx.drawTextAligned( string.sub(word,4,4), 144, 119, kTextAlignment.center)
+				gfx.drawTextAligned( string.sub(word,4,4), 144, 159, kTextAlignment.center)
 			end
 			if #word > 4 then
-				gfx.drawTextAligned( string.sub(word,5,5), 182, 119, kTextAlignment.center)
+				gfx.drawTextAligned( string.sub(word,5,5), 182, 159, kTextAlignment.center)
 			end
 			playdate.wait(300)
 		end
