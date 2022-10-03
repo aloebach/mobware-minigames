@@ -3,7 +3,8 @@
 	Author: Drew Loebach
 
 	a_sketchy_etcher minigame made for Mobware Minigames
-	-- Based on A-Sketchy-Etcher Pulp game by Shaun Inman
+	-- Based on A-Sketchy-Etcher Pulp game by Shaun Inman	
+
 ]]
 
 -- Define name for minigame package
@@ -29,6 +30,7 @@ mobware.AccelerometerIndicator.start("up", "down")
 
 --> Initialize sound effects
 local shake_noise = playdate.sound.sampleplayer.new('Minigames/a_sketchy_etcher/sounds/etcher_shake')
+local sketch_noise = playdate.sound.sampleplayer.new('Minigames/a_sketchy_etcher/sounds/sketch')
 
 -- Start accelerometer while we'll read later to determine the player has sufficiently shook a sketchy etcher
 playdate.startAccelerometer()
@@ -44,11 +46,25 @@ local previous_y = 1
 local previous_z = 0
 local SHAKE_THRESHOLD = 0.2
 local WINNING_SCORE = 80
-local MAX_GAME_TIME = 8 -- maximum time (in seconds) minigame should run
+local MAX_GAME_TIME = 8 -- maximum time (in seconds) minigame should run (at 20fps)
+local animation_finished = nil
 
--- start timer	 
-game_timer = playdate.frameTimer.new(MAX_GAME_TIME * 20, function() gamestate = "defeat" end) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
+-- start timer that will trigger the defeat animation if the player doesn't win before time runs out
 	--> after <MAX_GAME_TIME> seconds (at 20 fps) will set "defeat" gamestate
+game_timer = playdate.frameTimer.new(MAX_GAME_TIME * 20, function() 
+	gamestate = "defeat" 
+	mobware.AccelerometerIndicator.stop()
+	playdate.display.setRefreshRate( 40 )
+	local thumbs_down_gif = gfx.imagetable.new("Minigames/a_sketchy_etcher/images/thumbs_down")
+	local thumbs_down = AnimatedSprite.new( thumbs_down_gif )
+	thumbs_down:addState("animate", nil, nil, {tickStep = 1, loop = false, onAnimationEndEvent = function() animation_finished = true end}, true)
+		--> In the animated sprite above I included a function that will set animation_finished = true once the animation completes
+	thumbs_down:moveTo(88, 152)
+	playdate.stopAccelerometer()
+	
+	game_timer:remove()
+	sketch_noise:play(0) -- play sketch noise
+end)
 
 
 function a_sketchy_etcher.update()
@@ -74,13 +90,19 @@ function a_sketchy_etcher.update()
 	elseif gamestate == "victory" then
 		-- once victory animation is completed return 1 to end the minigame
 		if animation_finished then
+			sketch_noise:stop()
 			playdate.wait(500)
 			return 1
 		end
 
 	elseif gamestate == "defeat" then
 		-- you lost the minigame :-(
-		return 0
+		-- once defeat animation is completed return 0 to end the minigame
+		if animation_finished then
+			sketch_noise:stop()
+			playdate.wait(1000)
+			return 0
+		end
 
 	end
 
@@ -118,6 +140,7 @@ function shake()
 		playdate.stopAccelerometer()
 
 		game_timer:remove()
+		sketch_noise:play(0) -- play sketch noise
 		gamestate = "victory" 
 	end
 
