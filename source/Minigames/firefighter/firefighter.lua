@@ -15,19 +15,27 @@ pant = gfx.image.new("Minigames/firefighter/pant")
 pantcut = gfx.image.new("Minigames/firefighter/pantcut")
 
 -- < Drew's code >
-local GAME_TIME_LIMIT = 8 -- player has 8 seconds at 20fps
-local game_timer = playdate.frameTimer.new( GAME_TIME_LIMIT * 20, function() gamestate = "defeat" end ) --runs for 6 seconds at 20fps, and 3 seconds at 40fps
-
 --> Initialize sound effects
 local extinguish_noise = playdate.sound.sampleplayer.new('Minigames/firefighter/sounds/extinguish')
+local inferno_noise = playdate.sound.sampleplayer.new('Minigames/firefighter/sounds/inferno')
 local pee_noise = playdate.sound.sampleplayer.new('Minigames/firefighter/sounds/pee')
 pee_noise:play(1)
 
+local game_over = nil
+local GAME_TIME_LIMIT = 8 -- player has 8 seconds at 20fps, and 4 seconds at 40fps
+local game_timer = playdate.frameTimer.new( GAME_TIME_LIMIT * 20, 
+	function() 
+		gamestate = "defeat"
+		pee_noise:stop()
+		inferno_noise:play(1)
+		defeat_timer = playdate.frameTimer.new( 30, function() game_over = 1 end )
+	end ) 
+
 local fire_imagetable = gfx.imagetable.new('Minigames/firefighter/fire')
 local fire_small_imagetable = gfx.imagetable.new('Minigames/firefighter/fire_small')
+local fire_large_imagetable = gfx.imagetable.new('Minigames/firefighter/fire_XL')
 local fire = gfx.image.new("Minigames/firefighter/fire")
 local fire_hp = 10
---local fire_frame_num = 1
 
 -- ADDED BY DREW
 function newflame(x,y, hp)
@@ -161,6 +169,7 @@ function firefighter.update()
 		end
 	
 	elseif gamestate == "victory" then
+		game_timer:remove()
 		playdate.stopAccelerometer()
 		pee_noise:stop()
 		mobware.print("you're a hero!")
@@ -168,9 +177,13 @@ function firefighter.update()
 		return 1
 		
 	elseif gamestate == "defeat" then
-		playdate.stopAccelerometer()
-		pee_noise:stop()
-		return 0
+				
+		-- game_over will be set after defeat frame timer finishes 
+		if game_over then
+			playdate.stopAccelerometer()
+			return 0
+		end
+
 	end
 	
 end
@@ -233,8 +246,6 @@ function draw()
 		drawdroplets()
 	end
 	
-	drawflames()
-
 	gfx.setLineWidth(2)
 	setBlack()
 	--[[
@@ -247,6 +258,8 @@ function draw()
 	if(playdate.isCrankDocked() == false)then
 		drawpp()
 	end
+	
+	drawflames()
 
 end
 
@@ -277,11 +290,17 @@ function drawflames()
 		local flame = flames[i]
 		flame.frame += 1
 		if flame.frame  > fire_imagetable:getLength() then flame.frame = 1 end
-		if flame.hp > fire_hp / 2 then
-			fire_imagetable:getImage(flame.frame):drawCentered(flame.x, 200)
+		
+		if gamestate == "defeat" then
+			fire_large_imagetable:getImage(flame.frame):drawCentered(flame.x, 120)
 		else
-			fire_small_imagetable:getImage(flame.frame):drawCentered(flame.x, 220)
+			if flame.hp > fire_hp / 2 then
+				fire_imagetable:getImage(flame.frame):drawCentered(flame.x, 200)
+			else
+				fire_small_imagetable:getImage(flame.frame):drawCentered(flame.x, 220)
+			end
 		end
+		
 	end
 end
 
