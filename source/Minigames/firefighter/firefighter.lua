@@ -15,8 +15,13 @@ pant = gfx.image.new("Minigames/firefighter/pant")
 pantcut = gfx.image.new("Minigames/firefighter/pantcut")
 
 -- < Drew's code >
-local GAME_TIME_LIMIT = 10 -- player has 8 seconds at 20fps
+local GAME_TIME_LIMIT = 8 -- player has 8 seconds at 20fps
 local game_timer = playdate.frameTimer.new( GAME_TIME_LIMIT * 20, function() gamestate = "defeat" end ) --runs for 6 seconds at 20fps, and 3 seconds at 40fps
+
+--> Initialize sound effects
+local extinguish_noise = playdate.sound.sampleplayer.new('Minigames/firefighter/sounds/extinguish')
+local pee_noise = playdate.sound.sampleplayer.new('Minigames/firefighter/sounds/pee')
+pee_noise:play(1)
 
 local fire_imagetable = gfx.imagetable.new('Minigames/firefighter/fire')
 local fire_small_imagetable = gfx.imagetable.new('Minigames/firefighter/fire_small')
@@ -119,6 +124,7 @@ function firefighter.update()
 
 	if(playdate.isCrankDocked() == true)then
 		ppangle = 90
+		pee_noise:stop()
 	end
 
 	ppanglerad = math.rad(ppangle)
@@ -156,12 +162,14 @@ function firefighter.update()
 	
 	elseif gamestate == "victory" then
 		playdate.stopAccelerometer()
+		pee_noise:stop()
 		mobware.print("you're a hero!")
 		playdate.wait(1500)
 		return 1
 		
 	elseif gamestate == "defeat" then
 		playdate.stopAccelerometer()
+		pee_noise:stop()
 		return 0
 	end
 	
@@ -190,20 +198,14 @@ function physics()
 		end
 	end
 
+	-- check if droplets go off screen and/or collide with flames
 	i = 1
 	while i < #droplets do
 		local drop = droplets[i]
 		
-		--if (drop.y > 300) then
-		--	table.remove(droplets,i)
 		if drop.y > 240 then
 			_collision = check_collision(drop.x, drop.y)
-			if _collision == 1 then 
-				print("collision!")
-			end
-
-			table.remove(droplets,i)
-			
+			table.remove(droplets,i)	
 		else
 			i += 1
 		end
@@ -276,7 +278,6 @@ function drawflames()
 		flame.frame += 1
 		if flame.frame  > fire_imagetable:getLength() then flame.frame = 1 end
 		if flame.hp > fire_hp / 2 then
-			--fire_imagetable:getImage(flame.frame):drawCentered(flame.x, flame.y)
 			fire_imagetable:getImage(flame.frame):drawCentered(flame.x, 200)
 		else
 			fire_small_imagetable:getImage(flame.frame):drawCentered(flame.x, 220)
@@ -289,12 +290,13 @@ function check_collision(drop_x, drop_y)
 	-- if it does, reduce HP of flame and remove droplet
 	
 	for i=1, #flames do
-		if math.abs(drop_x - flames[i].x) < 10 then 
+		-- see if the liquid is close enough to a flame
+		if math.abs(drop_x - flames[i].x) < 14 then 
 			flames[i].hp -= 1
-			if flames[i].hp < 0 then 
-				print("extinguished!")
+			if flames[i].hp < 0 then
+				extinguish_noise:play(1) 
 				table.remove(flames,i)
-			if #flames <= 0 then gamestate = "victory" end
+				if #flames <= 0 then gamestate = "victory" end
 			end
 			return 1 
 		end
@@ -418,5 +420,10 @@ function hit(i,px,py)
   end
 
 end
+
+function firefighter.crankUndocked()
+	pee_noise:play(1)
+end
+
 -- Return minigame package
 return firefighter
