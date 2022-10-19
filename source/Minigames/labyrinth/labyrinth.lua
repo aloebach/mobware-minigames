@@ -612,7 +612,7 @@ local function physics(dt)
 end
 
 local labyrinth_start_time = playdate.getCurrentTimeMilliseconds()
-local endwait = true
+
 function labyrinth.update()
 	playdate.frameTimer.updateTimers()
 	
@@ -643,18 +643,8 @@ function labyrinth.update()
 			gamestate = "defeat"
 		end
 	elseif (gamestate == "win" or gamestate == "defeat") then
-		if endwait then
-			local start_time = playdate.getCurrentTimeMilliseconds()
-			playdate.stopAccelerometer()
-			draw()
-			coroutine.yield()
-			draw()
-			run_maze_loop(500)
-			while (playdate.getCurrentTimeMilliseconds() - start_time < 2700) do
-				run_maze_loop(15)
-			end
-		end
-		endwait = false
+		playdate.stopAccelerometer()
+		playdate.wait(2000)
 		if gamestate == "win" then
 			return 1
 		else
