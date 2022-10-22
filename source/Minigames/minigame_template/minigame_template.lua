@@ -57,17 +57,15 @@ local click_noise = playdate.sound.sampleplayer.new('Minigames/minigame_template
 -- TO-DO: ADD VICTORY THEME
 --local victory_theme = playdate.sound.fileplayer.new('Minigames/TV_Tuner/sounds/static_noise')
 
+-- set initial gamestate and start prompt for player to hit the B button
+local gamestate = 'hitB'
+mobware.BbuttonIndicator.start()
+
 -- start timer	 
 local MAX_GAME_TIME = 6 -- define the time at 20 fps that the game will run betfore setting the "defeat"gamestate
 local game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
 	--> after <MAX_GAME_TIME> seconds (at 20 fps) will set "defeat" gamestate
 	--> I'm using the frame timer because that allows me to increase the framerate gradually to increase the difficulty of the minigame
-
-
--- set initial gamestate and start prompt for player to hit the B button
-local gamestate = 'hitB'
-mobware.BbuttonIndicator.start()
-
 
 
 --[[
@@ -83,7 +81,6 @@ function minigame_template.update()
 
 	-- update timer
 	playdate.frameTimer.updateTimers()
-	--print('Time:', game_timer.frame)
 
 	-- In the first stage of the minigame, the user needs to hit the "B" button
 	if gamestate == 'hitB' then
