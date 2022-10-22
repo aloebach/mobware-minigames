@@ -25,8 +25,8 @@ pd_sprite.crank_counter = 0
 pd_sprite.total_frames = 16
 
 -- start timer 
-MAX_GAME_TIME = 4 -- define the time at 20 fps that the game will run betfore setting the "defeat" gamestate
-game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) 
+local MAX_GAME_TIME = 6 -- define the time at 20 fps that the game will run betfore setting the "defeat" gamestate
+local game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) 
 	--> after <MAX_GAME_TIME> seconds (at 20 fps) will move to "defeat" gamestate
 
 function hello_world.update()

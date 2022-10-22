@@ -8,7 +8,7 @@
 ]]
 
 -- Define name for minigame package
-bodega_cat = {}
+local bodega_cat = {}
 
 local gfx <const> = playdate.graphics
 
@@ -19,36 +19,37 @@ gfx.setBackgroundColor(gfx.kColorBlack)
 gfx.setColor(gfx.kColorWhite)
 
 -- Initialize animation for on-screen sprites
-cat_spritesheet = gfx.imagetable.new("Minigames/bodega_cat/images/bc-cat")
-cat = gfx.sprite.new(cat_spritesheet)
-cat_frame = math.random(1,4) -- set cat in random pose
-pose = {"up", "down", "left", "right"}
+local cat_spritesheet = gfx.imagetable.new("Minigames/bodega_cat/images/bc-cat")
+local cat = gfx.sprite.new(cat_spritesheet)
+local cat_frame = math.random(1,4) -- set cat in random pose
+local pose = {"up", "down", "left", "right"}
 cat:setImage(cat_spritesheet:getImage(cat_frame))
 cat:moveTo(200, 120)
 cat:add()
 
 -- initialize phone image
-phone_spritesheet = gfx.imagetable.new("Minigames/bodega_cat/images/phone")
-phone = gfx.sprite.new()
+local phone_spritesheet = gfx.imagetable.new("Minigames/bodega_cat/images/phone")
+local phone = gfx.sprite.new()
 phone:setImage(phone_spritesheet:getImage(cat_frame))
 phone:moveTo(200,190)
 phone:add()
 
 --> Initialize sound effects & background music
-camera_shutter = playdate.sound.sampleplayer.new("Minigames/bodega_cat/sounds/camera-shutter")
-background_music = playdate.sound.fileplayer.new("Minigames/bodega_cat/sounds/Chipho")
+local camera_shutter = playdate.sound.sampleplayer.new("Minigames/bodega_cat/sounds/camera-shutter")
+local background_music = playdate.sound.fileplayer.new("Minigames/bodega_cat/sounds/Chipho")
 background_music:play() -- play music only once
 
--- start timer, which will move to "compare" gamestate after a set amount of time
-MAX_GAME_TIME = 6 -- define the time at (20 fps) that the game will run before setting the "compare" gamestate
-game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) 
-
 -- set initial gamestate and start prompt for player to use the crank
-gamestate = "play"
-score = 0 
+local gamestate = "play"
+local score = 0 
+local MAX_SCORE = 4
+
+-- start timer, which will move to "compare" gamestate after a set amount of time
+local MAX_GAME_TIME = 7 -- define the time at (20 fps) that the game will run before setting the "compare" gamestate
+local game_timer = playdate.frameTimer.new( MAX_GAME_TIME * 20, function() gamestate = "defeat" end ) 
 
 -- initialize cat's pose:
-target_pose = cat_frame 
+local target_pose = cat_frame 
 while target_pose == cat_frame do
 	target_pose = math.random(1,4) -- set random pose to move cat to
 end
@@ -78,7 +79,7 @@ function bodega_cat.update()
 			
 			score+=1
 			
-			if score >= 3 then
+			if score >= MAX_SCORE then
 				gamestate = "victory"
 			end
 			
