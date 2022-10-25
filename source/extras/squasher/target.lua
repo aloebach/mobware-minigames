@@ -26,7 +26,10 @@ function Target:squash()
   swat_noise:play(1)
   if #self:overlappingSprites() > 0 then
     --print("squashing")
-    self:overlappingSprites()[1]:splat()
+    for _i, object in ipairs(self:overlappingSprites()) do
+      object:splat()
+    end
+    --self:overlappingSprites()[1]:splat()
   end
   self:setImage(fly_swatter)
   self:setCenter(0.5, 0.15)

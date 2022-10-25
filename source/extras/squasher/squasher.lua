@@ -23,17 +23,17 @@ math.randomseed(pd.getSecondsSinceEpoch())
 
 local gamestate = 'play'
 local game_counter = 0
-local GAME_TIME_LIMIT = 8 -- player has 8 seconds at 20fps
+local game_time_limit = 10 -- player has 8 seconds at 20fps
 
-local bugSprite
 local targetSprite
-local backgroundSprite
 local bug_speed = 5
-local MAX_BUG_SPEED <const> = 12
+local bug_spawn_time = 2
+local MAX_BUG_SPEED <const> = 10
 local bugs = {}
 
 local new_hi_score
 local hi_score
+local max_score = game_time_limit / bug_spawn_time
 score = 0
 
 -- reading high score from memory
@@ -46,22 +46,23 @@ end
 
 -- load and play soundtrack
 local soundtrack = playdate.sound.fileplayer.new('extras/squasher/sounds/HoliznaCC0_Eat')
-soundtrack:play()
+soundtrack:play(0)
+
+local perfect_noise = playdate.sound.sampleplayer.new('extras/squasher/sounds/perfect-sound-effect')
 
 local function spawn_bug()
 	-- speeds up bug and spawns a new bug
-	if bug_speed < MAX_BUG_SPEED then bug_speed += 1 end
+	if bug_speed < MAX_BUG_SPEED then bug_speed += 0.5 end
 	table.insert(bugs, Bug(bug_speed) )
 end
 
 
 -- set timer to spawn a bug every 2 seconds
-local bugTimer = playdate.timer.new(2000, spawn_bug)
+local bugTimer = playdate.timer.new(bug_spawn_time * 1000, spawn_bug)
 bugTimer.repeats = true
---bugTimer:start()	
 
 -- set game timer to set the length of the game at 60 seconds
-local gameTimer = playdate.timer.new( 10000, 
+local gameTimer = playdate.timer.new( game_time_limit * 1000, 
 	function() 
 		bugTimer:pause()
 		gamestate = 'timeUp'
@@ -82,6 +83,15 @@ local gameTimer = playdate.timer.new( 10000,
 			playdate.datastore.write(hi_score_table, "squasher_data")
 		else
 			new_hi_score = nil
+		end
+		
+		-- play "perfect" sound effect if player has a perfect game!
+		if score == max_score then 
+			perfect_noise:play(1) 
+			-- increase game time for next playthrough!	
+			if game_time_limit < 60 then 
+				game_time_limit += 10
+			end
 		end
 		
 	end )
@@ -105,6 +115,8 @@ function initialize()
 	targetSprite = Target()
 	
 	gameTimer:reset()
+	gameTimer.duration = game_time_limit * 1000
+	max_score = game_time_limit / bug_spawn_time
 	gameTimer:start()
 	bugTimer:reset()
 	bugTimer:start()
@@ -130,7 +142,11 @@ function squasher.update()
 		end
 
 		if bugs_on_screen then
-			mobware.print("GAME OVER")
+			if score == max_score then 
+				mobware.print("exterminated!")
+			else
+				mobware.print("try again!")
+			end
 			mobware.print("score: " .. score, 20,20)
 		if new_hi_score then mobware.print("new high score!", 20,60) end
 			if playdate.buttonIsPressed("b") then initialize() end

@@ -47,7 +47,7 @@ function Bug:init(speed)
 end
 
 function Bug:splat()
-  --TO-DO: REMOVE BUG SPRITE AND SIMPLY DRAW THE SMASHED BUG ONTO THE BACKGROUND
+
   -- increase score
   score += 1
   
@@ -57,6 +57,17 @@ function Bug:splat()
   self:setImage(self.splatImage)
   splat_noise:play(1)
   playdate.wait(200) -- pause briefly after squashing a bug
+  
+  -- draw smashed bug onto background and then remove sprite
+  local canvas = backgroundSprite:getImage():copy()
+      
+  gfx.pushContext(canvas)
+    self.splatImage:scaledImage(2):drawCentered(self.x, self.y)
+  gfx.popContext()
+  
+  backgroundSprite:setImage(canvas)
+  self:remove()
+  
 end
 
 function Bug:getRotationDegrees()
