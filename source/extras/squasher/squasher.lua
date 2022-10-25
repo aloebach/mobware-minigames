@@ -5,6 +5,9 @@
 	bonus game adaptation by Andrew Loebach
 
 	squasher for Mobware Minigames
+	
+	IDEA: after 30s timer there is a boss -> giant big with like 10 hit points 
+--> if you manage to kill it within the time limit, it explodes into 10 smaller bugs which scurry off and you get the ending screen
 
 ]]
 
@@ -46,6 +49,7 @@ end
 
 -- load and play soundtrack
 local soundtrack = playdate.sound.fileplayer.new('extras/squasher/sounds/HoliznaCC0_Eat')
+soundtrack:setLoopRange(3.5, 165)
 soundtrack:play(0)
 
 local perfect_noise = playdate.sound.sampleplayer.new('extras/squasher/sounds/perfect-sound-effect')
