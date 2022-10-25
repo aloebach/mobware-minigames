@@ -6,15 +6,13 @@
 
 	squasher for Mobware Minigames
 	
-	IDEA: after 30s timer there is a boss -> giant big with like 10 hit points 
---> if you manage to kill it within the time limit, it explodes into 10 smaller bugs which scurry off and you get the ending screen
-
 ]]
 
 local squasher = {}
 
 import "background"
 import "bug"
+import "GiantBug"
 import "target"
 
 local pd <const> = playdate
@@ -32,7 +30,7 @@ local targetSprite
 local bug_speed = 5
 local bug_spawn_time = 2
 local MAX_BUG_SPEED <const> = 10
-local bugs = {}
+bugs = {}
 
 local new_hi_score
 local hi_score
@@ -65,12 +63,12 @@ end
 local bugTimer = playdate.timer.new(bug_spawn_time * 1000, spawn_bug)
 bugTimer.repeats = true
 
--- set game timer to set the length of the game at 60 seconds
+-- set game timer to stop the game after time expires 
 local gameTimer = playdate.timer.new( game_time_limit * 1000, 
 	function() 
 		bugTimer:pause()
 		gamestate = 'timeUp'
-		soundtrack:setVolume(0.5) 
+		soundtrack:setVolume(0.4) 
 		targetSprite:stop()
 		for _i, bug in ipairs(bugs) do
 			bug:leave()
@@ -102,7 +100,7 @@ local gameTimer = playdate.timer.new( game_time_limit * 1000,
 	
 gameTimer.discardOnCompletion = false
 
-
+-- TO-DO: Add code to initialize boss battle
 function initialize()
 	
 	gfx.sprite.removeAll()
@@ -115,15 +113,25 @@ function initialize()
 	score = 0
 	bugs = {}
 
-	table.insert(bugs, Bug(bug_speed) )
 	targetSprite = Target()
 	
 	gameTimer:reset()
 	gameTimer.duration = game_time_limit * 1000
 	max_score = game_time_limit / bug_spawn_time
 	gameTimer:start()
-	bugTimer:reset()
-	bugTimer:start()
+
+	-- if the player has progressed enough, initiate boss battle
+	if game_time_limit > 20 then
+		gamestate = 'boss'
+		--spawn boss
+		table.insert(bugs, GiantBug(10) )
+		bugTimer:pause()
+	else
+		-- spawn normal bug & start bug timer
+		table.insert(bugs, Bug(bug_speed) )
+		bugTimer:reset()
+		bugTimer:start()
+	end
 	
 end
 
@@ -137,6 +145,13 @@ function squasher.update()
 	
 	gfx.drawTextAligned(math.ceil(gameTimer.timeLeft/1000),198,10, kTextAlignment.center)
 	--gfx.drawTextAligned(score, 198,220, kTextAlignment.center)
+
+	if gamestate == "boss" then
+		if score >= 7 then
+			mobware.print("CONGRATULATIONS!")
+			--TO-DO: add ending logic 
+		end
+	end
 
 	if gamestate == "timeUp" then
 		

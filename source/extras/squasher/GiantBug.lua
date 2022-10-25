@@ -4,12 +4,12 @@ local pd <const> = playdate
 local gfx <const> = pd.graphics
 local geom <const> = pd.geometry
 
-class("Bug").extends(gfx.sprite)
+class("GiantBug").extends(gfx.sprite)
 
 local splat_noise = playdate.sound.sampleplayer.new('extras/squasher/sounds/splat')
 
-function Bug:init(speed, initial_x, initial_y)
-  Bug.super.init(self)
+function GiantBug:init(speed)
+  GiantBug.super.init(self)
   --self.x = math.random(20, 380)
   local random_num = math.random()
   if random_num >0.5 then
@@ -21,66 +21,72 @@ function Bug:init(speed, initial_x, initial_y)
   end
   --self.x = math.random(20, 380)
   self.y = math.random(20, 220)
-  
-  if initial_x and initial_y then
-    self:moveTo(initial_x, initial_y)
-  else
-    self:moveTo(self.x, self.y)
-  end
+  self:moveTo(self.x, self.y)
 
-  self.width = 20
-  self.height = 20
+  --self.width = 60
+  --self.height = 60
 
+  self.hp = 10
   self.speed = speed or 6.5
   self.direction = geom.vector2D.new(math.cos(math.random(0, 359)), math.sin(math.random(0, 359)))
   self:setRotation(self:getRotationDegrees())
 
-  local bugImage = gfx.imagetable.new("extras/squasher/images/bug.gif")
-  self.animation = gfx.animation.loop.new(150, bugImage)
+  local GiantBugImage = gfx.imagetable.new("extras/squasher/images/bug.gif")
+  self.animation = gfx.animation.loop.new(150, GiantBugImage)
 
   local splatImage = gfx.image.new("extras/squasher/images/splat.png")
   self.splatImage = splatImage
   self.isSquashed = false
-
   self.isLeaving = false
 
-  self:setScale(2)
-  self:setImage(bugImage[1])
-
+  self:setImage(GiantBugImage[1])
+  self:setScale(6)
   --self:setCollideRect(self.width / 2, self.height / 2, self.width, self.height)
   self:setCollideRect(self.width / 4, self.height / 4, self.width/2, self.height/2)
   self:add()
 end
 
-function Bug:splat()
+function GiantBug:splat()
 
-  -- increase score
-  score += 1
+  -- reduce HP
+  self.hp -= 1
   
-  self.speed = 0
-  self.animation = nil
-  self.isSquashed = true
-  self:setImage(self.splatImage)
-  splat_noise:play(1)
-  playdate.wait(200) -- pause briefly after squashing a bug
-  
-  -- draw smashed bug onto background and then remove sprite
-  local canvas = backgroundSprite:getImage():copy()
-      
-  gfx.pushContext(canvas)
-    self.splatImage:scaledImage(2):drawCentered(self.x, self.y)
-  gfx.popContext()
-  
-  backgroundSprite:setImage(canvas)
-  self:remove()
+  if self.hp < 0 then
+    -- increase score
+    score += 1
+    
+    self.speed = 0
+    self.animation = nil
+    self.isSquashed = true
+    self:setImage(self.splatImage)
+    splat_noise:play(1)
+    playdate.wait(200) -- pause briefly after squashing a GiantBug
+    
+    -- draw smashed GiantBug onto background and then remove sprite
+    local canvas = backgroundSprite:getImage():copy()
+        
+    gfx.pushContext(canvas)
+      self.splatImage:scaledImage(6):drawCentered(self.x, self.y)
+    gfx.popContext()
+    
+    backgroundSprite:setImage(canvas)
+    
+    -- after you kill the giant bug, it spawns a bunch of smaller bugs underneath it
+    for i = 1,6 do
+      table.insert(bugs, Bug(10, self.x, self.y) )
+    end
+    
+    self:remove()
+
+  end
   
 end
 
-function Bug:getRotationDegrees()
+function GiantBug:getRotationDegrees()
   return math.deg(math.atan(self.direction.y, self.direction.x)) + 90
 end
 
-function Bug:isOffScreen()
+function GiantBug:isOffScreen()
   if (self.x < 0 - self.width or self.x > 400 + self.width or self.y < 0 - self.height or self.y > 240 + self.height) then
     return true
   end
@@ -122,14 +128,14 @@ local function chooseRandomDirection(self, force)
   end
 end
 
-function Bug:leave()
+function GiantBug:leave()
   if not self.isLeaving then
     chooseRandomDirection(self, true)
     self.isLeaving = true
   end
 end
 
-function Bug:update()
+function GiantBug:update()
   if not self.isSquashed then
     --print(pd.getElapsedTime(), self.isSquashed)
     if self.animation then
