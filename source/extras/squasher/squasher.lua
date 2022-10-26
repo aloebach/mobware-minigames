@@ -6,6 +6,7 @@
 
 	squasher for Mobware Minigames
 	
+	TO-DO: add ending after beating boss
 ]]
 
 local squasher = {}
@@ -32,18 +33,9 @@ local bug_spawn_time = 2
 local MAX_BUG_SPEED <const> = 10
 bugs = {}
 
-local new_hi_score
-local hi_score
 local max_score = game_time_limit / bug_spawn_time
 score = 0
 
--- reading high score from memory
-local _status, data_read = pcall(playdate.datastore.read, "squasher_data")
-if data_read then 
-	hi_score = data_read["hi_score"]
-else
-	hi_score = 0
-end
 
 -- load and play soundtrack
 local soundtrack = playdate.sound.fileplayer.new('extras/squasher/sounds/HoliznaCC0_Eat')
@@ -72,19 +64,6 @@ local gameTimer = playdate.timer.new( game_time_limit * 1000,
 		targetSprite:stop()
 		for _i, bug in ipairs(bugs) do
 			bug:leave()
-		end
-		
-		-- check for high score!
-		if score > hi_score then
-			print("new hi score!")
-			hi_score = score
-			new_hi_score = true
-			
-			-- save hi score to disc
-			local hi_score_table = {hi_score = hi_score}
-			playdate.datastore.write(hi_score_table, "squasher_data")
-		else
-			new_hi_score = nil
 		end
 		
 		-- play "perfect" sound effect if player has a perfect game!
@@ -166,8 +145,7 @@ function squasher.update()
 			else
 				mobware.print("try again!")
 			end
-			mobware.print("score: " .. score, 20,20)
-		if new_hi_score then mobware.print("new high score!", 20,60) end
+
 			if playdate.buttonIsPressed("b") then initialize() end
 		end
 		
