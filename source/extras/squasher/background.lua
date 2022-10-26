@@ -23,5 +23,6 @@ function Background:init()
   self.y = 120
   self:moveTo(self.x, self.y)
   self:setImage(canvas)
+  self:setZIndex(1)
   self:add()
 end

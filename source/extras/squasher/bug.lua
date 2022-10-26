@@ -49,6 +49,7 @@ function Bug:init(speed, initial_x, initial_y)
 
   --self:setCollideRect(self.width / 2, self.height / 2, self.width, self.height)
   self:setCollideRect(self.width / 4, self.height / 4, self.width/2, self.height/2)
+  self:setZIndex(4)
   self:add()
 end
 

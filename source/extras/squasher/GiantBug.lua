@@ -7,10 +7,11 @@ local geom <const> = pd.geometry
 class("GiantBug").extends(gfx.sprite)
 
 local splat_noise = playdate.sound.sampleplayer.new('extras/squasher/sounds/splat')
+local hit_noise = playdate.sound.sampleplayer.new('extras/squasher/sounds/hit')
 
 function GiantBug:init(speed)
   GiantBug.super.init(self)
-  --self.x = math.random(20, 380)
+
   local random_num = math.random()
   if random_num >0.5 then
     self.x = 0
@@ -23,10 +24,7 @@ function GiantBug:init(speed)
   self.y = math.random(20, 220)
   self:moveTo(self.x, self.y)
 
-  --self.width = 60
-  --self.height = 60
-
-  self.hp = 10
+  self.hp = 20
   self.speed = speed or 6.5
   self.direction = geom.vector2D.new(math.cos(math.random(0, 359)), math.sin(math.random(0, 359)))
   self:setRotation(self:getRotationDegrees())
@@ -38,18 +36,28 @@ function GiantBug:init(speed)
   self.splatImage = splatImage
   self.isSquashed = false
   self.isLeaving = false
+  self.inverted = 0
 
   self:setImage(GiantBugImage[1])
   self:setScale(6)
   --self:setCollideRect(self.width / 2, self.height / 2, self.width, self.height)
   self:setCollideRect(self.width / 4, self.height / 4, self.width/2, self.height/2)
+  self:setZIndex(2)
   self:add()
 end
 
 function GiantBug:splat()
 
+  -- play hit noise
+  hit_noise:play(1)
+  
   -- reduce HP
   self.hp -= 1
+
+  -- visual effect when giant bug is hit  
+  self.inverted = 10
+  self.animation:image():setInverted(true)
+  self:setImage(self.animation:image())
   
   if self.hp < 0 then
     -- increase score
@@ -138,6 +146,18 @@ end
 function GiantBug:update()
   if not self.isSquashed then
     --print(pd.getElapsedTime(), self.isSquashed)
+    
+    -- code to handle "damage" animation when giant bug is hit
+    if self.inverted > 0 then
+      self.inverted -= 1 -- countdown this number so that inverted effect wears off
+      if self.inverted == 0 then 
+        self.animation:image():setInverted(false) 
+        self:setImage(self.animation:image())
+      end
+    else
+      self.animation:image():setInverted(false) 
+    end
+    
     if self.animation then
       self:setImage(self.animation:image())
     end
