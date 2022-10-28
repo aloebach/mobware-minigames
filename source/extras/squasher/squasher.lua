@@ -6,7 +6,6 @@
 
 	squasher for Mobware Minigames
 	
-	TO-DO: add ending after beating boss
 ]]
 
 local squasher = {}
@@ -23,9 +22,11 @@ playdate.display.setRefreshRate( 30 )
 
 math.randomseed(pd.getSecondsSinceEpoch())
 
-local gamestate = 'play'
+gamestate = 'play'
 local game_counter = 0
-local game_time_limit = 10 -- player has 8 seconds at 20fps
+local game_time_limit = 10 -- starting time limit
+-- FOR TESTING, DELETE LATER:
+--local game_time_limit = 30 -- player has 8 seconds at 20fps
 
 local targetSprite
 local bug_speed = 5
@@ -42,9 +43,11 @@ local soundtrack = playdate.sound.fileplayer.new('extras/squasher/sounds/Holizna
 soundtrack:setLoopRange(3.5, 165)
 soundtrack:play(0)
 
+-- initialize sound effects
 local perfect_noise = playdate.sound.sampleplayer.new('extras/squasher/sounds/perfect-sound-effect')
+local clapping_noise = playdate.sound.sampleplayer.new('extras/squasher/sounds/clapping')
 
-local function spawn_bug()
+function spawn_bug()
 	-- speeds up bug and spawns a new bug
 	if bug_speed < MAX_BUG_SPEED then bug_speed += 0.5 end
 	table.insert(bugs, Bug(bug_speed) )
@@ -79,7 +82,7 @@ local gameTimer = playdate.timer.new( game_time_limit * 1000,
 	
 gameTimer.discardOnCompletion = false
 
--- TO-DO: Add code to initialize boss battle
+
 function initialize()
 	
 	gfx.sprite.removeAll()
@@ -100,10 +103,12 @@ function initialize()
 	gameTimer:start()
 
 	-- if the player has progressed enough, initiate boss battle
-	if game_time_limit > 20 then
-		gamestate = 'boss'
+	if game_time_limit == 30 or game_time_limit == 60 then
 		--spawn boss
+		gamestate = 'boss'
 		table.insert(bugs, GiantBug(10) )
+		-- spawn second boss if player is at the maximum level
+		if game_time_limit == 60 then table.insert(bugs, GiantBug(10) ) end
 		bugTimer:pause()
 	else
 		-- spawn normal bug & start bug timer
@@ -122,32 +127,77 @@ function squasher.update()
 	
 	gfx.sprite.update()
 	
-	gfx.drawTextAligned(math.ceil(gameTimer.timeLeft/1000),198,10, kTextAlignment.center)
-	--gfx.drawTextAligned(score, 198,220, kTextAlignment.center)
+	if gamestate == "play" then
+		gfx.drawTextAligned(math.ceil(gameTimer.timeLeft/1000),198,10, kTextAlignment.center)
 
-	if gamestate == "boss" then
-		if score >= 7 then
-			mobware.print("CONGRATULATIONS!")
-			--TO-DO: add ending logic 
+	elseif gamestate == "boss" then
+		--if score >= 7 then
+		if score >= 7 * game_time_limit / 30 then
+			gameTimer:pause()
+			gamestate = "victory" 
+			clapping_noise:play(1)
+			
+			-- display a hand that you have to high five to continue!
+			local high_five = gfx.sprite.new(gfx.image.new("extras/squasher/images/hand_palm"))
+			high_five:moveTo(350, 120)
+			high_five:setZIndex(2)
+			high_five:setCollideRect(high_five.width / 4, high_five.height / 4, high_five.width/2, high_five.height/2)
+			function high_five:splat()
+				-- if player high fives this hand then move to next gamestate
+				gamestate = "ending" 			
+			end
+			high_five:add()
+			
+		else
+			-- if player is still squashing, show game time
+			gfx.drawTextAligned(math.ceil(gameTimer.timeLeft/1000),198,10, kTextAlignment.center)
 		end
-	end
+	
+	elseif gamestate == "victory" then
+		
+		mobware.print("CONGRATULATIONS!", 40, 105)
+		
+		-- if player high-fives onscreen hand then it will move to "ending" gamestate
+		
+	elseif gamestate == "ending" then
+		
+		-- draw impact lines around high five!
+		gfx.setLineWidth( 3 )
+		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y, targetSprite.x - targetSprite.width/2 * 1.5,  targetSprite.y) -- drawing line left of hand
+		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y, targetSprite.x + targetSprite.width/2 * 1.5,  targetSprite.y) -- drawing line right of hand
+		gfx.drawLine( targetSprite.x, targetSprite.y - targetSprite.height/2, targetSprite.x,  targetSprite.y - targetSprite.height/2 * 1.5) -- drawing line above hand
+		gfx.drawLine( targetSprite.x, targetSprite.y + targetSprite.height/2, targetSprite.x,  targetSprite.y + targetSprite.height/2 * 1.5) -- drawing line below hand
+		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y + targetSprite.height/2, targetSprite.x + targetSprite.width/2 * 1.5,  targetSprite.y + targetSprite.height/2 * 1.5) -- drawing line to lower-right of hand
+		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y - targetSprite.height/2, targetSprite.x + targetSprite.width/2 * 1.5,  targetSprite.y - targetSprite.height/2 * 1.5) -- drawing line to upper-right of hand
+		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y + targetSprite.height/2, targetSprite.x - targetSprite.width/2 * 1.5,  targetSprite.y + targetSprite.height/2 * 1.5) -- drawing line to lower-left of hand
+		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y - targetSprite.height/2, targetSprite.x - targetSprite.width/2 * 1.5,  targetSprite.y - targetSprite.height/2 * 1.5) -- drawing line to upper-left of hand
 
-	if gamestate == "timeUp" then
+		
+		mobware.print("YOU DID IT!", 40, 105)
+		-- play cheering sound effect
+		playdate.wait(1500)
+		if game_time_limit < 60 then 
+			game_time_limit += 10
+		end
+		
+		initialize()
+
+	elseif gamestate == "timeUp" then
 		
 		local bugs_on_screen = nil
 		for _i, bug in ipairs(bugs) do
-			if not bug:isOffScreen() then bugs_on_screen = true end
+			if not bug:isOffScreen() and not bug.isSquashed then bugs_on_screen = true end
 		end
 
-		if bugs_on_screen then
-			if score == max_score then 
-				mobware.print("exterminated!")
-			else
-				mobware.print("try again!")
-			end
-
-			if playdate.buttonIsPressed("b") then initialize() end
+		if not bugs_on_screen then
+			if playdate.buttonJustPressed("a") or playdate.buttonJustPressed("b") then initialize() end
 		end
+		
+		if score == max_score then 
+			mobware.print("exterminated!")
+		else
+			mobware.print("try again!")
+		end		
 		
 	end
 	

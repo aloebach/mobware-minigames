@@ -5,6 +5,7 @@ local geom <const> = pd.geometry
 class("Target").extends(gfx.sprite)
 
 local fly_swatter = gfx.image.new("extras/squasher/images/fly_swatter")
+local hand = gfx.image.new("extras/squasher/images/hand_back")
 local crosshairs = gfx.image.new("extras/squasher/images/target")
 local swat_noise = playdate.sound.sampleplayer.new('extras/squasher/sounds/swat')
 
@@ -19,20 +20,27 @@ function Target:init()
 
   self:setImage(crosshairs)
   self:setCollideRect(self.width / 4, self.height / 4, self.width / 2 + 1, self.height / 2 + 1)
+  self:setZIndex(3)
   self:add()
 end
 
 function Target:squash()
+  
   swat_noise:play(1)
+
   if #self:overlappingSprites() > 0 then
     --print("squashing")
     for _i, object in ipairs(self:overlappingSprites()) do
       object:splat()
     end
-    --self:overlappingSprites()[1]:splat()
   end
-  self:setImage(fly_swatter)
-  self:setCenter(0.5, 0.15)
+
+  if gamestate == 'victory' or gamestate == 'ending' then
+    self:setImage(hand)
+  else
+    self:setImage(fly_swatter)
+    self:setCenter(0.5, 0.15)
+  end
 end
 
 function Target:stop()
