@@ -99,6 +99,12 @@ function minigame_cleanup()
 		sound:stop() 
 	end	
 	
+	-- kill any timers running?
+	for _i, timer in ipairs(playdate.timer.allTimers()) do
+		timer:remove()
+		timer = nil
+	end
+	
 	--trigger garbage collection to clear up memory
 	--collectgarbage("collect")	
 end
