@@ -35,6 +35,9 @@ bugs = {}
 local max_score = game_time_limit / bug_spawn_time
 score = 0
 
+-- set font
+local game_font = gfx.font.new("extras/squasher/font/Mobware_outlined")
+gfx.setFont(game_font)
 
 -- load and play soundtrack
 local soundtrack = playdate.sound.fileplayer.new('extras/squasher/sounds/HoliznaCC0_Eat')
