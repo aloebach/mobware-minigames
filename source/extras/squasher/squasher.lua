@@ -25,13 +25,11 @@ math.randomseed(pd.getSecondsSinceEpoch())
 gamestate = 'play'
 local game_counter = 0
 local game_time_limit = 10 -- starting time limit
--- FOR TESTING, DELETE LATER:
---local game_time_limit = 30 -- player has 8 seconds at 20fps
 
 local targetSprite
 local bug_speed = 5
 local bug_spawn_time = 2
-local MAX_BUG_SPEED <const> = 10
+local MAX_BUG_SPEED <const> = 9
 bugs = {}
 
 local max_score = game_time_limit / bug_spawn_time
@@ -59,7 +57,7 @@ local bugTimer = playdate.timer.new(bug_spawn_time * 1000, spawn_bug)
 bugTimer.repeats = true
 
 -- set game timer to stop the game after time expires 
-local gameTimer = playdate.timer.new( game_time_limit * 1000, 
+local gameTimer = playdate.timer.new( (game_time_limit) * 1000, 
 	function() 
 		bugTimer:pause()
 		gamestate = 'timeUp'
@@ -98,7 +96,7 @@ function initialize()
 	targetSprite = Target()
 	
 	gameTimer:reset()
-	gameTimer.duration = game_time_limit * 1000
+	gameTimer.duration = (game_time_limit + 0.9) * 1000
 	max_score = game_time_limit / bug_spawn_time
 	gameTimer:start()
 
@@ -125,14 +123,17 @@ function squasher.update()
 
 	playdate.timer.updateTimers()
 	
+	-- remove bug spawning timer if we're close to the end of the time limit 
+	if gameTimer.timeLeft < bug_spawn_time * 1000 then 	bugTimer:pause() end
+	
 	gfx.sprite.update()
 	
 	if gamestate == "play" then
-		gfx.drawTextAligned(math.ceil(gameTimer.timeLeft/1000),198,10, kTextAlignment.center)
+		gfx.drawTextAligned(math.floor(gameTimer.timeLeft/1000),198,10, kTextAlignment.center)
 
 	elseif gamestate == "boss" then
 		--if score >= 7 then
-		if score >= 7 * game_time_limit / 30 then
+		if score >= 10 * game_time_limit / 30 then
 			gameTimer:pause()
 			gamestate = "victory" 
 			clapping_noise:play(1)
@@ -150,7 +151,7 @@ function squasher.update()
 			
 		else
 			-- if player is still squashing, show game time
-			gfx.drawTextAligned(math.ceil(gameTimer.timeLeft/1000),198,10, kTextAlignment.center)
+			gfx.drawTextAligned(math.floor(gameTimer.timeLeft/1000),198,10, kTextAlignment.center)
 		end
 	
 	elseif gamestate == "victory" then
@@ -163,24 +164,32 @@ function squasher.update()
 		
 		-- draw impact lines around high five!
 		gfx.setLineWidth( 3 )
-		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y, targetSprite.x - targetSprite.width/2 * 1.5,  targetSprite.y) -- drawing line left of hand
-		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y, targetSprite.x + targetSprite.width/2 * 1.5,  targetSprite.y) -- drawing line right of hand
-		gfx.drawLine( targetSprite.x, targetSprite.y - targetSprite.height/2, targetSprite.x,  targetSprite.y - targetSprite.height/2 * 1.5) -- drawing line above hand
-		gfx.drawLine( targetSprite.x, targetSprite.y + targetSprite.height/2, targetSprite.x,  targetSprite.y + targetSprite.height/2 * 1.5) -- drawing line below hand
-		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y + targetSprite.height/2, targetSprite.x + targetSprite.width/2 * 1.5,  targetSprite.y + targetSprite.height/2 * 1.5) -- drawing line to lower-right of hand
-		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y - targetSprite.height/2, targetSprite.x + targetSprite.width/2 * 1.5,  targetSprite.y - targetSprite.height/2 * 1.5) -- drawing line to upper-right of hand
-		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y + targetSprite.height/2, targetSprite.x - targetSprite.width/2 * 1.5,  targetSprite.y + targetSprite.height/2 * 1.5) -- drawing line to lower-left of hand
-		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y - targetSprite.height/2, targetSprite.x - targetSprite.width/2 * 1.5,  targetSprite.y - targetSprite.height/2 * 1.5) -- drawing line to upper-left of hand
+		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y, targetSprite.x - targetSprite.width/2 * 1.3,  targetSprite.y) -- drawing line left of hand
+		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y, targetSprite.x + targetSprite.width/2 * 1.3,  targetSprite.y) -- drawing line right of hand
+		gfx.drawLine( targetSprite.x, targetSprite.y - targetSprite.height/2, targetSprite.x,  targetSprite.y - targetSprite.height/2 * 1.3) -- drawing line above hand
+		gfx.drawLine( targetSprite.x, targetSprite.y + targetSprite.height/2, targetSprite.x,  targetSprite.y + targetSprite.height/2 * 1.3) -- drawing line below hand
+		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y + targetSprite.height/2, targetSprite.x + targetSprite.width/2 * 1.3,  targetSprite.y + targetSprite.height/2 * 1.3) -- drawing line to lower-right of hand
+		gfx.drawLine( targetSprite.x + targetSprite.width/2, targetSprite.y - targetSprite.height/2, targetSprite.x + targetSprite.width/2 * 1.3,  targetSprite.y - targetSprite.height/2 * 1.3) -- drawing line to upper-right of hand
+		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y + targetSprite.height/2, targetSprite.x - targetSprite.width/2 * 1.3,  targetSprite.y + targetSprite.height/2 * 1.3) -- drawing line to lower-left of hand
+		gfx.drawLine( targetSprite.x - targetSprite.width/2, targetSprite.y - targetSprite.height/2, targetSprite.x - targetSprite.width/2 * 1.3,  targetSprite.y - targetSprite.height/2 * 1.3) -- drawing line to upper-left of hand
 
 		
-		mobware.print("YOU DID IT!", 40, 105)
-		-- play cheering sound effect
-		playdate.wait(1500)
+		mobware.print("YOU DID IT!", 40, 105)		
+		playdate.wait(1000)
 		if game_time_limit < 60 then 
 			game_time_limit += 10
+			initialize()
+		else
+			targetSprite:remove()
+			gamestate = "credits" 
 		end
 		
-		initialize()
+
+	elseif gamestate == "credits" then
+		mobware.print("minigame by Brandon Dean\nbonus game by drew-lo")
+		mobware.print("thanks for playing!", 60, 200)
+		
+
 
 	elseif gamestate == "timeUp" then
 		

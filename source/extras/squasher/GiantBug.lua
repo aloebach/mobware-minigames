@@ -80,7 +80,7 @@ function GiantBug:splat()
     backgroundSprite:setImage(canvas)
     
     -- after you kill the giant bug, it spawns a bunch of smaller bugs underneath it
-    for i = 1,6 do
+    for i = 1,9 do
       table.insert(bugs, Bug(10, self.x, self.y) )
     end
     
