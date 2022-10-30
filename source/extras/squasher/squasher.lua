@@ -24,7 +24,7 @@ math.randomseed(pd.getSecondsSinceEpoch())
 
 gamestate = 'play'
 local game_counter = 0
-local game_time_limit = 10 -- starting time limit
+local game_time_limit = 60 -- starting time limit
 
 local targetSprite
 local bug_speed = 5
@@ -186,7 +186,7 @@ function squasher.update()
 		
 
 	elseif gamestate == "credits" then
-		mobware.print("minigame by Brandon Dean\nbonus game by drew-lo")
+		mobware.print("minigame by Brandon Dean\nbonus game by drew-lo\nmusic by HoliznaCC0")
 		mobware.print("thanks for playing!", 60, 200)
 		
 
