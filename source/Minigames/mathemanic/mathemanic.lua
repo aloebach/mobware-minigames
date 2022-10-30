@@ -34,6 +34,8 @@ chalk_hand:add()
 -- Initialize music / sound effects
 local writing_noise = playdate.sound.sampleplayer.new('Minigames/mathemanic/sounds/scribble')
 local erasing_noise = playdate.sound.sampleplayer.new('Minigames/mathemanic/sounds/erase')
+local applause = playdate.sound.sampleplayer.new('Minigames/mathemanic/sounds/applause')
+applause:setVolume(0.6)
 
 -- start timer	 
 local MAX_GAME_TIME = 9 -- define the time at 20 fps that the game will run before setting the "defeat" gamestate
@@ -132,7 +134,7 @@ function mathemanic.update()
 		playdate.wait(500)	-- Pause 2.5s before ending the minigame
 		
 		writing_noise:play(1)
-		--TO-DO: add cheering sound effect!
+		applause:play(1)
 
 		-- display text indicating the player has won
 		gfx.drawTextAligned("A+",168, 132)
