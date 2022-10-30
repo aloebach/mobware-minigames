@@ -24,7 +24,7 @@ math.randomseed(pd.getSecondsSinceEpoch())
 
 gamestate = 'play'
 local game_counter = 0
-local game_time_limit = 60 -- starting time limit
+local game_time_limit = 10 -- starting time limit
 
 local targetSprite
 local bug_speed = 5
