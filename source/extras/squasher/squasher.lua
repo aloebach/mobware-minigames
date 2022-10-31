@@ -184,6 +184,7 @@ function squasher.update()
 			initialize()
 		else
 			targetSprite:remove()
+			gfx.setFont(mobware_default_font)
 			gamestate = "credits" 
 		end
 		
