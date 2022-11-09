@@ -19,7 +19,6 @@ math.randomseed(pd.getSecondsSinceEpoch())
 gamestate = 'intro'
 local number_of_NPCs = 50
 local GAME_TIME_LIMIT = 8 -- minigame time limit (at 20fps)
-local game_timer = playdate.frameTimer.new( GAME_TIME_LIMIT * 20, function() gamestate = "defeat" end ) 
 local found_counter = 0
 
 local cursorSprite
@@ -35,17 +34,6 @@ music:play(0)
 -- initialize sprites and game
 local backgroundSprite = Background()
 
---load NPC sprites
-local NPC_image_table = gfx.imagetable.new("Minigames/where_is_aldo/images/NPCs")
-for _i = 1, number_of_NPCs do
-	local NPC = gfx.sprite.new()
-	random_character = math.random( NPC_image_table:getLength() )
-	NPC:setImage( NPC_image_table:getImage(random_character) )
-	NPC:moveTo(math.random(400), math.random(240))
-	NPC:setZIndex(NPC.y)
-	NPC:add()
-end
-
 -- load Aldo's sprite
 local aldo = gfx.sprite.new()
 local aldo_image = gfx.image.new("Minigames/where_is_aldo/images/aldo")
@@ -55,6 +43,23 @@ aldo:setZIndex(aldo.y)
 aldo:setCollideRect(aldo.width/4, aldo.height/4 , aldo.width / 2, aldo.height / 2)
 aldo:add()
 
+--load NPC sprites
+local NPC_image_table = gfx.imagetable.new("Minigames/where_is_aldo/images/NPCs")
+for _i = 1, number_of_NPCs do
+	local NPC = gfx.sprite.new()
+	random_character = math.random( NPC_image_table:getLength() )
+	NPC:setImage( NPC_image_table:getImage(random_character) )
+	NPC:moveTo(math.random(400), math.random(240))
+	-- check if NPC is directly in front of Aldo
+	while (NPC.x - aldo.x)^2 < 200 and (NPC.y - aldo.y)^2 < 200 do
+		--print("NPC covering aldo, moving to new location...")
+		NPC:moveTo(math.random(400), math.random(240))
+	end
+	
+	NPC:setZIndex(NPC.y)
+	NPC:add()
+end
+
 -- generate double-sized copy of screen to display under magnifying glass for zoom effect
 gfx.sprite.update()
 local zoomed_image = gfx.getWorkingImage():scaledImage(2)
@@ -63,13 +68,20 @@ local mask_image = gfx.image.new( zoomed_image:getSize())
 -- show magnifying glass
 local cursorSprite = MagnifyingGlass()
 
+-- set timer to go to defeat state after time has expired
+local game_timer = playdate.frameTimer.new( GAME_TIME_LIMIT * 20, 
+	function() 
+		if #cursorSprite:overlappingSprites() > 0 then
+			gamestate = "victory"
+		else 
+			gamestate = "defeat"
+		end 
+	end ) 
 
 function where_is_aldo.update()
 
 	-- update frame timer
 	playdate.frameTimer.updateTimers()
-
-	gfx.sprite.update()
 	
 	if gamestate == "intro" then
 
@@ -97,6 +109,8 @@ function where_is_aldo.update()
 
 
 	elseif gamestate == "play" then
+		
+		gfx.sprite.update()
 		
 		-- update image under magnifying glass if the player hits the "A" button
 		if playdate.buttonJustPressed("A") then

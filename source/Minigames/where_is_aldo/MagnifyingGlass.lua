@@ -17,7 +17,7 @@ function MagnifyingGlass:init()
 
   self:setImage(magnifying_glass_image)
   -- TO-DO: update collision rect to match up with center of magnifying glass
-  self:setCollideRect(self.width / 4, self.height / 4, self.width / 2 + 1, self.height / 2 + 1)
+  self:setCollideRect(self.width * 0.33, self.height * 0.33, self.width * 0.33, self.height * 0.33)
   self:setZIndex(300)
   self:add()
 end
