@@ -5,6 +5,7 @@ class("Background").extends(gfx.sprite)
 
 function Background:init()
   Background.super.init(self)
+  --[[
 
   -- create background sprite by drawing tiles onto canvas
   local canvas = gfx.image.new(400, 240)
@@ -18,6 +19,9 @@ function Background:init()
     gfx.drawLine( 240, 0, 240, 240)	
     gfx.drawLine( 320, 0, 320, 240)	
   gfx.unlockFocus()
+  ]]
+  --NEW CODE
+  local canvas = gfx.image.new("Minigames/where_is_aldo/images/background")
 
   self.x = 200
   self.y = 120
