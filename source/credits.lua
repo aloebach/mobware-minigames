@@ -33,7 +33,8 @@ gfx.setFont(mobware_font_L)
 gfx.setBackgroundColor(gfx.kColorBlack)
 
 --> initialize music
-local credits_music = playdate.sound.fileplayer.new('sounds/credits_theme')
+local credits_music = playdate.sound.fileplayer.new('sounds/credits_theme', 3)
+credits_music:setLoopRange(3)
 credits_music:play(0) -- play music (loop after it's finished) 
 
 
