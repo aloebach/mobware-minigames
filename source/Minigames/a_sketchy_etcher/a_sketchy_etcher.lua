@@ -45,8 +45,8 @@ local previous_x = 0
 local previous_y = 1
 local previous_z = 0
 local SHAKE_THRESHOLD = 0.2
-local WINNING_SCORE = 80
-local MAX_GAME_TIME = 8 -- maximum time (in seconds) minigame should run (at 20fps)
+local WINNING_SCORE = 40
+local MAX_GAME_TIME = 4 -- maximum time (in seconds) minigame should run (at 20fps)
 local animation_finished = nil
 
 -- start timer that will trigger the defeat animation if the player doesn't win before time runs out
