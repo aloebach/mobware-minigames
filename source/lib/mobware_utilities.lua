@@ -104,7 +104,11 @@ function minigame_cleanup()
 		timer:remove()
 		timer = nil
 	end
-	
+	for _i, timer in ipairs(playdate.frameTimer.allTimers()) do
+		timer:remove()
+		timer = nil
+	end
+		
 	--trigger garbage collection to clear up memory
 	--collectgarbage("collect")	
 end
