@@ -112,7 +112,7 @@ function minigame_template.update()
 
 	-- In the final stage of the minigame the user needs to turn the crank
 	elseif gamestate == 'turnCrank' then
-		if playdate.getCrankTicks(1) >= 1 then
+		if math.abs(playdate.getCrankTicks(1)) >= 1 then
 			mobware.crankIndicator.stop()
 			gamestate = 'victory'
 		end
