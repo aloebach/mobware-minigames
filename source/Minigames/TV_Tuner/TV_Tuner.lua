@@ -20,8 +20,7 @@ TV_WIDTH = TV_SCREEN_RIGHT - TV_SCREEN_LEFT
 TV_HEIGHT = TV_SCREEN_BOTTOM - TV_SCREEN_TOP
 local tv_grid = {}
 
-local GAME_TIME_LIMIT = 8 -- player has 8 seconds at 20fps
-local game_timer = playdate.frameTimer.new( GAME_TIME_LIMIT * 20, function() gamestate = "defeat" end ) --runs for 6 seconds at 20fps, and 3 seconds at 40fps
+local GAME_TIME_LIMIT = 7 -- player has 7 seconds at 20fps
 
 --initialize animation for polar bear
   --> I'm going to use Whitebrim's very convenient AnimatedSprite library
@@ -39,15 +38,15 @@ tv_static:setBounds(TV_SCREEN_LEFT, TV_SCREEN_TOP, TV_WIDTH * 2, TV_HEIGHT * 2) 
 tv_static:add()
 tv_static.spriteSheet = {}
 
-
--- if tv static files have been generated, then grab load the images from the playdate's memory:
+-- if tv static files have already been generated, then load the images from the playdate's memory:
 if playdate.file.isdir("tv_static") then
   -- read images from disk and load into spritesheet
   for _i = 1, 10 do
     tv_static.spriteSheet[_i] = playdate.datastore.readImage( "tv_static/" .. _i)
   end
+  
 else
-  -- if the tv_static images aren't found, then we generate them here:
+  -- if the tv_static images aren't found in memory, then we generate them here:
   print("no image files found for TV static. Generating...")
   for _i = 1, 10 do
     tv_static.spriteSheet[_i] = generate_static(_i)
@@ -55,8 +54,6 @@ else
   end
   print("tv_static files written to disk")
 end
-
-
 
 tv_static:setImage(tv_static.spriteSheet[1])
 tv_static:setZIndex(2) -- Render static over polar bear, but under TV
@@ -93,31 +90,64 @@ local ANTENNA_LENGTH = 60
 
 -- Randomly generate angle of antenna which will have good reception (win condition)
 local reception_angle = math.random(ANTENNA_MIN, ANTENNA_MAX)
+local noise_frequency = math.floor( math.max( 10 - math.abs((antenna_angle - reception_angle) / 2), 1 ) )
 local has_reception_counter = 0
 local game_counter = 0 
 
+-- Used to calculate dt, since I ported this from the Love2D framework
+local dt = 1 / 20 -- setting a static dt value will mean the player has less time as FPS increases
+
 gamestate = 'play'
+
+-- instantiate timer that will end game after GAME_TIME_LIMIT is reached
+local game_timer = playdate.frameTimer.new( GAME_TIME_LIMIT * 20, 
+  function() 
+      
+    game_counter = 0 --reset game counter so we can use it for the victory/defeat animation
+
+    -- check one last time if the player is in the sweet spot:
+    if math.abs(antenna_angle - reception_angle) < 2 then -- get reception if you're under 2 degrees from correct angle
+      tv_static:remove() --      :setVisible(flag)      
+      gamestate = 'victory'
+      thumb_image:addSprite()  --clear TV screen of static
+      tv_static:remove()
+      static_noise:stop()
+      oh_yeah:play(1)  -- play victory sound
+        
+    else
+      gamestate = "defeat" 
+      
+      -- If time runs out and antenna isn't in the sweet spot, then the player loses    
+      snap_sound:play(1)
+      static_noise:setVolume( 15 / 100 ) -- set static to hi volume 
+      noise_frequency = 1
+      
+      -- recalculate antenna values to display broken antenna
+      antenna_x =  ANTENNA_LENGTH/2 * math.cos(math.rad(antenna_angle)) --updates antenna's x value, based on angle
+      antenna_y =  ANTENNA_LENGTH/2 * math.sin(math.rad(antenna_angle)) --updates antenna's y value, based on angle
+            
+    end
+  end ) --runs for 6 seconds at 20fps, and 3 seconds at 40fps
 
 -- Start crank indicator animation
 mobware.crankIndicator.start()
 
 
 function TV_Tuner.update()
-  -- Used to calculate dt, since I ported this from the Love2D framework
-  --local dt = 1 / playdate.display.getRefreshRate() --scaling by refresh rate will keep teh same time scale regardless of frame rate
-  local dt = 1 / 20 -- setting a static dt value will mean the player has less time as FPS increases
 
   -- update timer
   playdate.frameTimer.updateTimers()
 
+  -- Generate static shown on TV
+  tv_static:setImage(tv_static.spriteSheet[noise_frequency])
+  local random_x_offset = math.random( 0, TV_WIDTH )
+  local random_y_offset = math.random( 0, TV_HEIGHT )
+  tv_static:setBounds(TV_SCREEN_LEFT - random_x_offset, TV_SCREEN_TOP - random_y_offset, TV_WIDTH * 2, TV_HEIGHT * 2)
+
   if gamestate == 'play' then
-    -- Generate static shown on TV
+    
     --> noise_frequency will decrease down to 1 (most static) if far away from the reception angle, and increase when close to reception angle
-    local noise_frequency = math.floor( math.max( 10 - math.abs((antenna_angle - reception_angle) / 2), 1 ) )
-    tv_static:setImage(tv_static.spriteSheet[noise_frequency])
-    local random_x_offset = math.random( 0, TV_WIDTH )
-    local random_y_offset = math.random( 0, TV_HEIGHT )
-    tv_static:setBounds(TV_SCREEN_LEFT - random_x_offset, TV_SCREEN_TOP - random_y_offset, TV_WIDTH * 2, TV_HEIGHT * 2)
+    noise_frequency = math.floor( math.max( 10 - math.abs((antenna_angle - reception_angle) / 2), 1 ) )
 
     -- Update volume of static noise based on amount of static
     static_noise:setVolume((10 - noise_frequency) / 100 ) 
@@ -130,7 +160,6 @@ function TV_Tuner.update()
       --player wins game if they hold reception for 1 second
       if has_reception_counter >= 1 then 
         gamestate = 'victory'
-        victory_time = 0 
         game_counter = 0 --reset game counter so we can use it for the victory animation
         thumb_image:addSprite()  --clear TV screen of static
         tv_static:remove()
@@ -143,42 +172,15 @@ function TV_Tuner.update()
       tv_static:add()
     end
 
-  end
 
-  if gamestate == 'victory' then
-    if game_counter >= 2 then return 1 end --end game after 2s of victory animation
+  elseif gamestate == 'victory' then
+    if game_counter >= 1.5 then return 1 end --end game after 2s of victory animation
     thumb_image:moveTo( thumb_image.x , thumb_image.y - 1)
-  end
 
-  if gamestate == 'defeat' then
-    --TO-DO: ADD DEFEAT ANIMATION BEFORE RETURNING 0
+
+  elseif gamestate == 'defeat' then
+    if game_counter >= 2 then return 0 end --end game after 2s of defeat animation
     
-    -- check one last time if the player is in the sweet spot:
-    if math.abs(antenna_angle - reception_angle) < 2 then -- get reception if you're under 2 degrees from correct angle
-      has_reception_counter = has_reception_counter + dt
-      tv_static:remove() --      :setVisible(flag)
-      
-      --player wins game if they hold reception for 1 second
-      if has_reception_counter >= 1 then 
-        gamestate = 'victory'
-        victory_time = 0 
-        game_counter = 0 --reset game counter so we can use it for the victory animation
-        thumb_image:addSprite()  --clear TV screen of static
-        tv_static:remove()
-        static_noise:stop()
-        -- play victory sound
-        oh_yeah:play(1)
-      end
-    else
-      -- If time runs out and antenna isn't in the sweet spot, then the player loses    
-      snap_sound:play(1)
-      static_noise:stop()
-      --static_noise:setVolume( 10 / 100 ) -- set static to maximum volume 
-      
-      --local game_timer = playdate.frameTimer.new( 20, function() gamestate = "exit" end ) --runs for 6 seconds at 20fps, and 3 seconds at 40fps
-      
-      return 0
-    end
   end
 
   --increase game counter
@@ -190,16 +192,8 @@ function TV_Tuner.update()
   --draw antennas
   gfx.drawLine( 207, 50, 165, 10)   --left antenna
   gfx.drawLine( 207, 50, 207 + antenna_x, 50 - antenna_y)  --right antenna
-
---[[
-  -- draw broken antenna after time expires:
-  if gamestate ~= "defeat" then 
-    antenna_x =  ANTENNA_LENGTH/2 * math.cos(math.rad(antenna_angle)) --updates antenna's x value, based on angle
-    antenna_y =  ANTENNA_LENGTH/2 * math.sin(math.rad(antenna_angle)) --updates antenna's y value, based on angle
-    gfx.drawLine( 207, 50, 207 + antenna_x, 50 - antenna_y)  -- half of broken right antenna 
-    gfx.drawLine( 207 + antenna_x, 50 - antenna_y, 207 + 2*antenna_x, 50 + antenna_y )  --other half of broken right antenna 
-  end
---]]
+  -- draw broken antenna in defeat gamestate:
+  if gamestate == "defeat" then gfx.drawLine( 207 + antenna_x, 50 - antenna_y, 207 + 2*antenna_x, 50 + antenna_y )  end
 
   --print instructions to player
   if game_counter < 2 and gamestate == "play" then
