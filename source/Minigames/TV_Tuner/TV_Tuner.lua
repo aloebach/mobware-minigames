@@ -38,10 +38,26 @@ tv_static:moveTo( TV_SCREEN_LEFT, TV_SCREEN_TOP )
 tv_static:setBounds(TV_SCREEN_LEFT, TV_SCREEN_TOP, TV_WIDTH * 2, TV_HEIGHT * 2) --use double TV_WIDTH 
 tv_static:add()
 tv_static.spriteSheet = {}
--- Call function to generate images of tv static 
-for _i = 1, 10 do
-  tv_static.spriteSheet[_i] = generate_static(_i)
+
+
+-- if tv static files have been generated, then grab load the images from the playdate's memory:
+if playdate.file.isdir("tv_static") then
+  -- read images from disk and load into spritesheet
+  for _i = 1, 10 do
+    tv_static.spriteSheet[_i] = playdate.datastore.readImage( "tv_static/" .. _i)
+  end
+else
+  -- if the tv_static images aren't found, then we generate them here:
+  print("no image files found for TV static. Generating...")
+  for _i = 1, 10 do
+    tv_static.spriteSheet[_i] = generate_static(_i)
+    playdate.datastore.writeImage(tv_static.spriteSheet[_i], "tv_static/" .. _i )
+  end
+  print("tv_static files written to disk")
 end
+
+
+
 tv_static:setImage(tv_static.spriteSheet[1])
 tv_static:setZIndex(2) -- Render static over polar bear, but under TV
 
