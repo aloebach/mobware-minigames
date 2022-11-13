@@ -1,18 +1,11 @@
 -- Define minigame package
 local firefighter = {}
---[[
-import "Minigames/firefighter/CoreLibs/math"
-import "Minigames/firefighter/CoreLibs/graphics"
-import "Minigames/firefighter/CoreLibs/ui"
-import "Minigames/firefighter/CoreLibs/timer"
-import "Minigames/firefighter/CoreLibs/object"
-]]
 
 local gfx <const> = playdate.graphics
 
 local gamestate = "start"
-pant = gfx.image.new("Minigames/firefighter/pant")
-pantcut = gfx.image.new("Minigames/firefighter/pantcut")
+local pant = gfx.image.new("Minigames/firefighter/pant")
+local pantcut = gfx.image.new("Minigames/firefighter/pantcut")
 
 -- < Drew's code >
 --> Initialize sound effects
@@ -37,7 +30,8 @@ local fire_large_imagetable = gfx.imagetable.new('Minigames/firefighter/fire_XL'
 local fire = gfx.image.new("Minigames/firefighter/fire")
 local fire_hp = 10
 
--- ADDED BY DREW
+local flames = {}
+
 function newflame(x,y, hp)
 	local new = {}
 	new.x = x
@@ -48,44 +42,34 @@ function newflame(x,y, hp)
 	table.insert(flames, new)
 end
 
-flames = {}
 for i = 1, 5 do
-	-- have flames bewween 120 - 360
-	--newflame(80 + 40 * i, 162, fire_hp)
 	newflame(120 + 40 * i, 200, fire_hp)
 end
--- < end Drew's code >
 
-width = playdate.display.getWidth()
-height = playdate.display.getHeight()
+local width = playdate.display.getWidth()
+local height = playdate.display.getHeight()
 
-dropletbaserad = 2
+local dropletbaserad = 2
+local droplets = {}
+local gravity = 0.25
+local ppangle = 180
+local pppower = 10
+local ppspread = 1
+local ppanglespread = 0.5
+local ppflow = 2
 
-droplets = {}
-
-gravity = 0.25
-
-ppangle = 180
-
-pppower = 10
-
-ppspread = 1
-ppanglespread = 0.5
-
-ppflow = 2
-
-ppx = 90
-ppy = 90
-ppgirth = 32
-pplength = 64
+local ppx = 90
+local ppy = 90
+local ppgirth = 32
+local pplength = 64
 --id say that's average
 
-headx = 0
-heady = 0
+local headx = 0
+local heady = 0
 
-pantxoff = 0
+local pantxoff = 0
 
-lines = {}
+local lines = {}
 
 local line = {}
 line.x1 = 200
@@ -101,7 +85,7 @@ line.y2 = 0
 table.insert(lines,line)
 
 playdate.startAccelerometer()
-accel = {}
+local accel = {}
 
 --mobware.crankIndicator.start()
 
@@ -110,25 +94,17 @@ function firefighter.update()
 	-- update timer
 	playdate.frameTimer.updateTimers()
 	
-	time = playdate.getTime()
-	epoch = playdate.getSecondsSinceEpoch()
+	local time = playdate.getTime()
+	local epoch = playdate.getSecondsSinceEpoch()
 
 	accel[1],accel[2] = playdate.readAccelerometer()
-	--printTable(accel)
-
 	accel[2] = math.clamp(0.1,accel[2],2)
 
 	ppangle = playdate.getCrankPosition() - 90
 
 	local buffa = 10
-	upangle = -90 + buffa
-	downangle = 90 - buffa
-
-	--if(ppangle > 180)then
-	--	ppangle = upangle
-	--end
-
-	--ppangle = math.clamp(upangle,ppangle,downangle)
+	local upangle = -90 + buffa
+	local downangle = 90 - buffa
 
 	if(playdate.isCrankDocked() == true)then
 		ppangle = 90
@@ -199,26 +175,25 @@ function physics()
 		drop.y += drop.vy
 
 		for i = 1, #lines do
-		local line = lines[i]
-		local closest = closestpointonline(line.x1,line.y1,line.x2,line.y2,drop.x,drop.y)
-		local dist = distance(drop.x,drop.y,closest[1],closest[2])
-		local distto1 = squaredDistance(drop.x,drop.y,line.x1,line.y1)
-		local distto2 = squaredDistance(drop.x,drop.y,line.x2,line.y2)
-		local linelength = squaredDistance(line.x1,line.y1,line.x2,line.y2) + (drop.r * drop.r) + 10
-		if dist < drop.r and distto1 < linelength and distto2 < linelength then
-			--hit(i,closest[1],closest[2])
-		end
+			local line = lines[i]
+			local closest = closestpointonline(line.x1,line.y1,line.x2,line.y2,drop.x,drop.y)
+			local dist = distance(drop.x,drop.y,closest[1],closest[2])
+			local distto1 = squaredDistance(drop.x,drop.y,line.x1,line.y1)
+			local distto2 = squaredDistance(drop.x,drop.y,line.x2,line.y2)
+			local linelength = squaredDistance(line.x1,line.y1,line.x2,line.y2) + (drop.r * drop.r) + 10
 		end
 	end
 
 	-- check if droplets go off screen and/or collide with flames
-	i = 1
+	local i = 1
 	while i < #droplets do
 		local drop = droplets[i]
 		
 		if drop.y > 240 then
 			_collision = check_collision(drop.x, drop.y)
 			table.remove(droplets,i)	
+		elseif drop.y < 0 or drop.x > 400 or drop.x <0 then
+			table.remove(droplets,i)			
 		else
 			i += 1
 		end
@@ -248,14 +223,8 @@ function draw()
 	
 	gfx.setLineWidth(2)
 	setBlack()
-	--[[
-	for i=1, #lines do
-		local line = lines[i]
-		gfx.drawLine(line.x1,line.y1,line.x2,line.y2)
-	end
-	]]
 
-	if(playdate.isCrankDocked() == false)then
+	if(playdate.isCrankDocked() == false) then
 		drawpp()
 	end
 	
@@ -413,21 +382,13 @@ function hit(i,px,py)
 
   local velocitydeltax = ball.vx-ball2.vx
   local velocitydeltay = ball.vy-ball2.vy
-
-  velocitydelta = math.sqrt(velocitydeltax^2 + velocitydeltay^2)
-  --print("vd "..velocitydelta)
-  --if(velocitydelta < -0.01 or velocitydelta > 0.01)then
-  --for i = 1, #hitsounds do
-    --hitsounds[i]:setVolume(remap(velocitydelta,-0.1,0.5,0,1))
-  --end
-  --hitsounds[math.floor(math.random(1,3))]:play(1)
-  --end
+  local velocitydelta = math.sqrt(velocitydeltax^2 + velocitydeltay^2)
 
   local dot = velocitydeltax * normalx + velocitydeltay * normaly
 
   if(dot > 0)then
-    coefficient = -0.5
-    impulseStrength = (1 + coefficient) * dot * (1 / mass + 1 / mass)
+    local coefficient = -0.5
+    local impulseStrength = (1 + coefficient) * dot * (1 / mass + 1 / mass)
     impulsex = impulseStrength * normalx
     impulsey = impulseStrength * normaly
     ball.vx = ball.vx - (impulsex / mass)
