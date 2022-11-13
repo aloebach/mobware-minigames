@@ -236,8 +236,11 @@ function playdate.update()
 			unlocked_bonus_games_list = {}
 			for _bonus_game, _status in pairs(unlocked_bonus_games) do
 				print("adding", _bonus_game)
-				table.insert( unlocked_bonus_games_list, _bonus_game )
+				table.insert( unlocked_bonus_games_list, _bonus_game:lower() )
 			end
+			
+			-- sort table so that bonus games appear in alphabetical order
+			table.sort( unlocked_bonus_games_list )
 
 			-- add launcher card for selected bonus game
 			local launcher_image_path = 'extras/' .. unlocked_bonus_games_list[bonus_game_number] .. '/card'
