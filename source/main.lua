@@ -23,16 +23,21 @@ import "CoreLibs/ui"
 import "CoreLibs/crank"
 import "CoreLibs/easing"
 import "CoreLibs/keyboard"
+import "CoreLibs/math"
+import "CoreLibs/easing"
 
 -- Import supporting libraries
 import 'lib/AnimatedSprite' --used to generate animations from spritesheet
 import 'lib/mobware_ui'
 import 'lib/mobware_utilities'
+
+-- Import classes
 import 'lib/Playdate'
 import 'lib/Coin'
 
 -- Defining gfx as shorthand for playdate graphics API
 local gfx <const> = playdate.graphics
+local ease  <const> = playdate.easingFunctions
 
 --Define local variables to be used outside of the minigames
 local GameState
@@ -61,12 +66,15 @@ mobware_default_font = mobware_font_M
 
 -- initialize sprite sheets for transitions
 local playdate_spritesheet = gfx.imagetable.new("images/playdate_spinning")
+local bang_spritesheet = gfx.imagetable.new("images/bang")
 local demon_spritesheet = gfx.imagetable.new("images/demon_big")
 
 -- initialize music
 local main_theme = playdate.sound.fileplayer.new('sounds/mobwaretheme')
-local victory_music = playdate.sound.fileplayer.new('sounds/victory_v2')
-local defeat_music = playdate.sound.fileplayer.new('sounds/defeat')
+--local victory_music = playdate.sound.fileplayer.new('sounds/victory_v2')
+--local defeat_music = playdate.sound.fileplayer.new('sounds/defeat')
+local victory_music = playdate.sound.fileplayer.new('sounds/mobware_EDM_Bass')
+local defeat_music = playdate.sound.fileplayer.new('sounds/mobware_minigame_lost')
 
 -- initialize sound effects for menu
 local click_sound_1 = playdate.sound.sampleplayer.new('sounds/click1')
@@ -291,7 +299,7 @@ function playdate.update()
 				
 				--if the player's score is sufficiently high, show credits
 				if score == GAME_WINNING_SCORE then GameState = 'credits' end
-
+				
 				-- increase game speed after each successful minigame:
 				time_scaler = time_scaler + 1
 			end
@@ -299,11 +307,12 @@ function playdate.update()
 			-- Set up demon sprite for transition animation
 			set_black_background()
 			demon_sprite = AnimatedSprite.new( demon_spritesheet )
-			demon_sprite:addState("animate", nil, nil, {tickStep = 3, frames = {2,4}}, true)
-			demon_sprite:addState("laughing", nil, nil, {tickStep = 2, frames = {2,4}, loop = 5, nextAnimation = "throwing"})
-			demon_sprite:addState("angry", nil, nil, {tickStep = 2, frames = {5,6}, reverse = true, loop = 3, nextAnimation = "throwing"})
-			demon_sprite:addState("throwing", 1, 4, {tickStep = 3, loop = 3, nextAnimation = "finish"})
-			demon_sprite:addState("finish", nil, nil, {tickStep = 2, frames = {7,7}, nextAnimation = "animate"})
+			demon_sprite:addState("animate", nil, nil, {tickStep = 3, frames = {3,6}}, true)
+			demon_sprite:addState("laughing", nil, nil, {tickStep = 2, frames = {3,6}, loop = 5, nextAnimation = "throwing"})
+			--demon_sprite:addState("angry", 7, 12, {tickStep = 1, reverse = true, yoyo=true, loop = 4, nextAnimation = "throwing"})
+			demon_sprite:addState("angry", nil, nil, {tickStep = 1, frames = {7,9,10,12}, reverse = true, yoyo=true, loop = 10, nextAnimation = "throwing"})
+			demon_sprite:addState("throwing", 1, 6, {tickStep = 2, loop = 3, nextAnimation = "finish"})
+			demon_sprite:addState("finish", nil, nil, {tickStep = 2, frames = {13,13}, nextAnimation = "animate"})
 			demon_sprite:moveTo(200, 120)
 			demon_sprite:setZIndex(1)
 			
@@ -318,29 +327,53 @@ function playdate.update()
 
 			-- once throwing state is completed throw one last playdate at the player and begin minigame
 			demon_sprite.states.throwing.onAnimationEndEvent = function () 
-				local playdate_sprite = AnimatedSprite.new( playdate_spritesheet )
-				playdate_sprite:addState("animate", 1, 18, {tickStep = 1, reverse = true, loop = false, onAnimationEndEvent = function () GameState = 'initialize' end }, true)
-				playdate_sprite:moveTo(200, 120)
-				playdate_sprite:setZIndex(200)
+				local playdate_at_screen = AnimatedSprite.new( playdate_spritesheet )
+				playdate_at_screen:addState("animate", 1, 18, {tickStep = 1, reverse = true, loop = false, onAnimationEndEvent = function () GameState = 'initialize' end }, true)
+				playdate_at_screen:moveTo(200, 120)
+				playdate_at_screen:setZIndex(200)
 			end -- remove sprite once animation completes
 			
+			-- update music speed depending on the player's progress
+			local music_rate = math.min(1 + time_scaler / 20, 2)
 			
 			-- animate demon laughing or crying depending on if the player won the minigame
 			if game_result == 0 then 
-				local music_rate = math.min(1 + time_scaler / 20, 2)
-				--defeat_music:setRate(music_rate)
+				defeat_music:setRate(music_rate)
 				defeat_music:play(1)
 				demon_sprite:changeState("laughing")
 				coin1 = Coin:new(140, 100)
 				coin2 = Coin:new(260, 100)
 			elseif game_result == 1 then
+				victory_music:setRate(music_rate)
 				victory_music:play(1) -- play victory theme 
 				demon_sprite:changeState("angry")
+				
+				-- animate playdate hitting demon in the face
+				local playdate_at_demon = AnimatedSprite.new( playdate_spritesheet )
+				playdate_at_demon:addState("animate", 1, 10, {tickStep = 1, reverse = false, loop = false, onAnimationEndEvent = 
+					function () 
+						local bang_sprite = AnimatedSprite.new( bang_spritesheet )
+						bang_sprite:addState("animate", 1, 3, {tickStep = 1, loop = 3, onAnimationEndEvent = function () bang_sprite:remove() end}, true)
+						bang_sprite:moveTo(200, 50)
+						bang_sprite:setZIndex(200)
+						playdate_at_demon:remove()
+					end}, true)
+				playdate_at_demon:moveTo(200, 120)
+				playdate_at_demon:setZIndex(200)			
+				
+				-- logic to animated playdate upwards to hit the demon in the face
+				playdate_at_demon.ytimer = playdate.frameTimer.new(10, 120, 65, ease.outBack)
+				function playdate_at_demon.update(self)
+					self.super.update(self)
+					self:moveTo(self.x, self.ytimer.value)
+				end
+					
 			else
+				victory_music:setRate(music_rate)
 				victory_music:play(1) -- play victory theme 
 				demon_sprite:changeState("throwing")				
 			end
-
+			
 		end
 
 
@@ -444,7 +477,7 @@ end
 -- Callback functions for crank
 function playdate.cranked(change, acceleratedChange) if minigame and minigame.cranked then minigame.cranked(change, acceleratedChange) end end
 function playdate.crankDocked() if minigame and minigame.crankDocked then minigame.crankDocked() end end
-function playdate.crankUndocked() if minigame and minigame.crankDocked then minigame.crankUndocked() end end
+function playdate.crankUndocked() if minigame and minigame.crankUndocked then minigame.crankUndocked() end end
 
 -- Callback functions for button presses:
 function playdate.AButtonDown() if minigame and minigame.AButtonDown then minigame.AButtonDown() end end
