@@ -85,20 +85,22 @@ end
 
 local function checkBearPosition(pos)
 	if pos == 'up' then
-		if bearCurrentImage > 35 then
-			correct_noise:play()
+		if bearCurrentImage > 25 then
+			return true
 		else
 			if gamestate ~= 'defeat_anim' then
 				defeatAnimation()
+				return nil
 			end
 		end
 	end
 	if pos == 'down' then
-		if bearCurrentImage < 15 then
-			correct_noise:play()
+		if bearCurrentImage < 25 then
+			return true
 		else
 			if gamestate ~= 'defeat_anim' then
 				defeatAnimation()
+				return nil
 			end
 		end
 	end
@@ -147,7 +149,7 @@ local function loadGame()
         end
     )
 
-	bearPos = math.random(5, 7)
+	bearPos = math.random(5, 6)
 
 	bearSprite = gfx.sprite.new(bearImageTable:getImage(bearCurrentImage))
 	bearSprite:setImage(bearImageTable:getImage(bearCurrentImage))
@@ -177,8 +179,10 @@ local function loadGame()
 			return
 		end
 
-		if currentEskimoUpWave1 - 1 == bearPos then
-			checkBearPosition('up')
+		if currentEskimoUpWave1 + 1 == bearPos then
+			checkBearPosition('down')
+		elseif currentEskimoUpWave1 - 2 == bearPos then
+			if checkBearPosition('up') then correct_noise:play() end
 		elseif currentEskimoUpWave1 ~= 1 then grunt_noise:play() end
 		
 		eskimos[currentEskimoUpWave1]:waveUp()
@@ -200,8 +204,10 @@ local function loadGame()
 			return
 		end
 
-		if currentEskimoDownWave1 - 1 == bearPos then
-			checkBearPosition('down')
+		if currentEskimoDownWave1 + 1 == bearPos then
+			checkBearPosition('up')
+		elseif currentEskimoDownWave1 - 2 == bearPos then
+			if checkBearPosition('down') then correct_noise:play() end
 		end
 		
 		eskimos[currentEskimoDownWave1]:waveDown()
@@ -232,8 +238,10 @@ local function loadGame()
 			return
 		end
 
-		if currentEskimoUpWave2 - 1 == bearPos then
-			checkBearPosition('up')
+		if currentEskimoUpWave2 + 1 == bearPos then
+			checkBearPosition('down')
+		elseif currentEskimoUpWave2 - 2 == bearPos then
+			if checkBearPosition('up') then correct_noise:play() end
 		elseif currentEskimoUpWave2 ~= 1 then grunt_noise:play() end
 		
 		eskimos[currentEskimoUpWave2]:waveUp()
