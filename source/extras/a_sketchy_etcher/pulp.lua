@@ -11,7 +11,7 @@ local shake_counter = 0
 local previous_x = 0
 local previous_y = 1
 local previous_z = 0
-local SHAKE_THRESHOLD = 0.2
+local SHAKE_THRESHOLD = 0.4
 local ENOUGH_SHAKES = 40
 -- END DREW's ERASE FUNCTIONALITY CODE
 

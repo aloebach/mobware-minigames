@@ -911,7 +911,7 @@ end
 __pulp:getScript("player").confirm = function(__actor, event, __evname)
   local __self = __script[2] -- [this script]
   --call "redo" // TODO: currently broken
-  __self.clear(__actor, event, "clear") 
+  --__self.clear(__actor, event, "clear") 
 end
 
 __pulp:getScript("player").connect = function(__actor, event, __evname)
