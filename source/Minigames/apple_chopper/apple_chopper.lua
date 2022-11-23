@@ -10,20 +10,22 @@ local apple_chopper = {}
 --import 'CoreLibs/easing'
 import "Minigames/apple_chopper/libs/sequence"
 
-hand = playdate.graphics.image.new("Minigames/apple_chopper/hand")
-apple = playdate.graphics.image.new("Minigames/apple_chopper/apple")
-apple_slice = playdate.graphics.image.new("Minigames/apple_chopper/apple_slice")
-handTransform = playdate.geometry.affineTransform.new()
+local hand = playdate.graphics.image.new("Minigames/apple_chopper/hand")
+local apple = playdate.graphics.image.new("Minigames/apple_chopper/apple")
+local apple_slice = playdate.graphics.image.new("Minigames/apple_chopper/apple_slice")
+local handTransform = playdate.geometry.affineTransform.new()
 
-anim_x = sequence.new():from(70):to(20, 0.5, "inSine")
-anim_y = sequence.new():from(100):to(240, 0.5, "inBack")
+local anim_x = sequence.new():from(70):to(20, 0.5, "inSine")
+local anim_y = sequence.new():from(100):to(240, 0.5, "inBack")
 
-is_apple_cut = false
+local is_apple_cut = false
 mobware.crankIndicator.start()
 
 local gamestate = "play"
 local game_timer = playdate.frameTimer.new( 20 * 4, function() gamestate = "defeat" end ) 
 
+-- loading sound effect
+local hyuh = playdate.sound.sampleplayer.new("Minigames/apple_chopper/hyuh")
 
 function apple_chopper.update()
 	sequence.update()
@@ -33,17 +35,20 @@ function apple_chopper.update()
 
 
 	local angle = 405
+	local cx, ca = 0, 0
 	if playdate.isCrankDocked()==false then
+		cx, ca = playdate.getCrankChange()
 		angle = (360-playdate.getCrankPosition()) + 90
 	end
 	handTransform:reset()
 	handTransform:translate( -150, 0 )
 	handTransform:rotate( angle )
 
-	if is_apple_cut==false and angle < 370 and angle > 340 then
+	if is_apple_cut==false and angle < 370 and angle > 340 and cx > 15 then
 		anim_x:start()
 		anim_y:start()
 		is_apple_cut = true
+		hyuh:play(1)
 		game_timer = playdate.frameTimer.new( 20, function() gamestate = "victory" end ) 
 	end
 
