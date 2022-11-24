@@ -180,7 +180,7 @@ local function loadGame()
 		end
 
 		if currentEskimoUpWave1 + 1 == bearPos then
-			checkBearPosition('down')
+			--checkBearPosition('down')
 		elseif currentEskimoUpWave1 - 2 == bearPos then
 			if checkBearPosition('up') then correct_noise:play() end
 		elseif currentEskimoUpWave1 ~= 1 then grunt_noise:play() end
