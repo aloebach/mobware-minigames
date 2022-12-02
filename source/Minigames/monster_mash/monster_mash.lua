@@ -32,8 +32,8 @@ mechamonzilla:moveTo(235,160)
 -- animate monzilla
 local monzilla_spritesheet = gfx.imagetable.new("Minigames/monster_mash/images/monzilla")
 local monzilla = AnimatedSprite.new( monzilla_spritesheet )
-monzilla:addState("fight",1,4, {tickStep = 3, loop = true}, true).asDefault()
 monzilla:addState("idle",1,1, {tickStep = 3, loop = false})
+monzilla:addState("fight",1,4, {tickStep = 2, loop = false, nextAnimation = "idle"}, true).asDefault()
 monzilla:addState("victory",11,11, {})
 monzilla:addState("defeated",6,10, {tickStep = 3, loop = false})
 monzilla:moveTo(140,165)
@@ -65,23 +65,26 @@ function monster_mash.update()
 		-- show text:
 		mobware.print("MASH!", 50, 100)
 
-		-- after "A" is pressed, start game, animate Monzilla and remove button prompt
+		-- after "A" is pressed, start game, and animate Monzilla
 		if playdate.buttonJustPressed('a') or timer.currentTime > 2000 then
 			zilla_gamestate = 'play' 
 			monzilla:changeState('fight')
-			mobware.AbuttonIndicator.stop()
 		end	
 	end
 
 	if zilla_gamestate == 'play' then
 		-- player mashing A will score points for monzilla
-		if playdate.buttonJustPressed('a') then zilla_score = zilla_score + 1.4 end
+		if playdate.buttonJustPressed('a') then 
+			monzilla:changeState('fight')	-- play punching animation
+			zilla_score = zilla_score + 1.4 	-- increase score
+		end
 
 		-- mechamonzilla will slowly and surely chip away at monzilla
 		zilla_score = zilla_score - 0.15
 
 		-- Win condition:
 		if timer.currentTime > 3500 then 
+			mobware.AbuttonIndicator.stop()
 			if zilla_score > 10 then
 				background:setImage(gfx.image.new("Minigames/monster_mash/images/toyko_sunrise"))
 				monzilla:changeState('victory')
