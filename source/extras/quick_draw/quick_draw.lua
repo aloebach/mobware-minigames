@@ -2,7 +2,7 @@
 --[[
 	Author: seansamu
 	
-	(bonus game adaptation by Drew-Lo
+	(bonus game adaptation by Drew-Lo)
 	
 	quick_draw bonus game for Mobware Minigames
 
@@ -13,6 +13,8 @@ local quick_draw = {}
 
 -- all of the code here will be run when the minigame is loaded, so here we'll initialize our graphics and variables:
 local gfx <const> = playdate.graphics
+
+playdate.display.setRefreshRate( 30 )
 
 -- uninitialized variables
 local flagTimer = nil
@@ -45,33 +47,83 @@ local function onShootingFinished ()
 	shootingAnimationFinished = true
 end
 
+local function any_button_pressed()
+	-- returns 1 if any button is pressed
+	if playdate.buttonIsPressed('a') then return 1 end
+	if playdate.buttonIsPressed('b') then return 1 end
+	if playdate.buttonIsPressed('up') then return 1 end
+	if playdate.buttonIsPressed('down') then return 1 end
+	if playdate.buttonIsPressed('left') then return 1 end
+	if playdate.buttonIsPressed('right') then return 1 end
+
+	-- if no button is pressed, return nil
+	return nil
+end
+
+local function dpad_pressed()
+	-- returns 1 if any button on the d-pad is pressed
+	if playdate.buttonIsPressed('up') then return 1 end
+	if playdate.buttonIsPressed('down') then return 1 end
+	if playdate.buttonIsPressed('left') then return 1 end
+	if playdate.buttonIsPressed('right') then return 1 end
+
+	-- if no button is pressed, return nil
+	return nil
+end
+
+local text_width, text_height = gfx.getTextSize("X")
+-- returns an image of the score
+local function draw_score(score)
+	local canvas = gfx.image.new(text_width, text_height)
+	gfx.lockFocus(canvas)
+		gfx.drawTextAligned(score, 0, 0)
+	gfx.unlockFocus()
+	return canvas
+end
+
+
+
 -- Sample Sounds from https://www.fesliyanstudios.com/royalty-free-sound-effects-download
-local gunfireSound = playdate.sound.sampleplayer.new('Minigames/quick_draw/sounds/gunfire.wav') -- Gauge Pump Action Shotgun Close Gunshot A Sound Effect
-local flagWaveSound = playdate.sound.sampleplayer.new('Minigames/quick_draw/sounds/wind-swoosh.wav') -- Wind Shoowsh Fast Sound Effect
+local gunfireSound = playdate.sound.sampleplayer.new('extras/quick_draw/sounds/gunfire.wav') -- Gauge Pump Action Shotgun Close Gunshot A Sound Effect
+local flagWaveSound = playdate.sound.sampleplayer.new('extras/quick_draw/sounds/wind-swoosh.wav') -- Wind Shoowsh Fast Sound Effect
 
 -- Wind sound from https://mixkit.co/free-sound-effects/wind/
-local windSound = playdate.sound.sampleplayer.new('Minigames/quick_draw/sounds/light-wind.wav')
+local windSound = playdate.sound.sampleplayer.new('extras/quick_draw/sounds/light-wind.wav')
 
 -- Images
-local P1_ImageTable = gfx.imagetable.new('Minigames/quick_draw/images/cowboy-table-39-76.png')
+local P1_ImageTable = gfx.imagetable.new('extras/quick_draw/images/cowboy-table-39-76.png')
 assert(P1_ImageTable)
 
-local P2_ImageTable = gfx.imagetable.new('Minigames/quick_draw/images/enemy-cowboy-table-39-76.png')
+local P2_ImageTable = gfx.imagetable.new('extras/quick_draw/images/enemy-cowboy-table-39-76.png')
 assert(P2_ImageTable)
 
-local backgroundImage = gfx.image.new('Minigames/quick_draw/images/background.png')
+local backgroundImage = gfx.image.new('extras/quick_draw/images/background.png')
 assert(backgroundImage)
 
-local cactusImageTable = gfx.imagetable.new('Minigames/quick_draw/images/cactus-table-74-107.png')
+local cactusImageTable = gfx.imagetable.new('extras/quick_draw/images/cactus-table-74-107.png')
 assert(cactusImageTable)
 
-local quickImage = gfx.image.new('Minigames/quick_draw/images/quick.png')
-assert(quickImage)
-
-local drawImage = gfx.image.new('Minigames/quick_draw/images/draw.png')
-assert(drawImage)
+local sign_image = gfx.image.new('extras/quick_draw/images/sign')
+assert(sign_image)
 
 -- Sprites
+
+P1_score_sign = gfx.sprite.new(sign_image)
+P1_score_sign:moveTo(32, 32)
+
+local P1_score_sprite = gfx.sprite.new(32,32)
+P1_score_sprite:setImage(draw_score(0))
+P1_score_sprite:moveTo(32, 26)
+P1_score_sprite:setRotation(45)
+
+local P2_score_sign = gfx.sprite.new(sign_image)
+P2_score_sign:moveTo(368, 32)
+P2_score_sign:setImageFlip(gfx.kImageFlippedX)
+
+local P2_score_sprite = gfx.sprite.new(32,32)
+P2_score_sprite:setImage(draw_score(0))
+P2_score_sprite:moveTo(368, 26)
+P2_score_sprite:setRotation(-45)
 
 local cowboyStates = {
 	{
@@ -97,7 +149,7 @@ local cowboyStates = {
 		name = 'cowboy_gunsmoke',
 		firstFrameIndex = 5,
 		framesCount = 4,
-		tickStep = 1,
+		tickStep = 2,
 		loop = 3,
 		nextAnimation = 'cowboy_idle',
 		xScale = 2, 
@@ -115,12 +167,12 @@ local cowboyStates = {
 	},
 }
 
-local cowboySprite = AnimatedSprite.new( P1_ImageTable )
-cowboySprite:setStates(cowboyStates)
-cowboySprite:changeState('cowboy_idle')
-cowboySprite:moveTo(50, 150)
-cowboySprite:setZIndex(2)
-cowboySprite:add()
+local player1sprite = AnimatedSprite.new( P1_ImageTable )
+player1sprite:setStates(cowboyStates)
+player1sprite:changeState('cowboy_idle')
+player1sprite:moveTo(50, 150)
+player1sprite:setZIndex(2)
+player1sprite:add()
 
 local enemyStates = {
 	{
@@ -146,7 +198,7 @@ local enemyStates = {
 		name = 'enemy_gunsmoke',
 		firstFrameIndex = 5,
 		framesCount = 4,
-		tickStep = 1,
+		tickStep = 2,
 		loop = 3,
 		nextAnimation = 'enemy_idle',
 		xScale = 2, 
@@ -164,12 +216,12 @@ local enemyStates = {
 	},
 }
 
-local enemySprite = AnimatedSprite.new( P2_ImageTable )
-enemySprite:setStates( enemyStates )
-enemySprite:changeState('enemy_idle')
-enemySprite:moveTo(350, 150)
-enemySprite:setZIndex(2)
-enemySprite:add()
+local player2sprite = AnimatedSprite.new( P2_ImageTable )
+player2sprite:setStates( enemyStates )
+player2sprite:changeState('enemy_idle')
+player2sprite:moveTo(350, 150)
+player2sprite:setZIndex(2)
+player2sprite:add()
 
 local backgroundSprite = gfx.sprite.new(backgroundImage)
 backgroundSprite:moveTo(0, 0)
@@ -221,15 +273,21 @@ local function reset_duel()
 	flagTimer = nil
 	enemyShootTimer = nil
 	
-	cowboySprite:changeState('cowboy_idle')
-	cowboySprite:setRotation(0)
-	cowboySprite:moveTo(50, 150)
+	player1sprite:changeState('cowboy_idle')
+	player1sprite:setRotation(0)
+	player1sprite:moveTo(50, 150)
 	
-	enemySprite:changeState('enemy_idle')
-	enemySprite:setRotation(0)
-	enemySprite:moveTo(350, 150)
+	player2sprite:changeState('enemy_idle')
+	player2sprite:setRotation(0)
+	player2sprite:moveTo(350, 150)
 	
 	cactusSprite:changeState('cactus_idle')
+	
+	P1_score_sign:remove()
+	P1_score_sprite:remove()
+	P2_score_sign:remove()
+	P2_score_sprite:remove()
+
 end
 
 
@@ -246,19 +304,25 @@ function quick_draw.update()
 		windSound:play()
 
 		if (openingAnimationDone and not flagTimer) then
-			local randomNumber = math.random(20 * 3, 20 * 6) -- between 3s and 6s at 20fps 
+			local randomNumber = math.random(30 * 1, 30 * 8) -- between 3s and 6s at 20fps 
 			flagTimer = playdate.frameTimer.new(randomNumber, randomNumber, 0)
 			flagTimer:start()
 			gamestate = 'waiting'
 		end
+		
 	-- start flagTimer, play cactus animation once flagTimer is 0
 	elseif gamestate == 'waiting' then
 		
 		-- if the player hits the button before the flag is waved, don't allow them to register another button press for ~1 second
 		if playdate.buttonJustPressed(playdate.kButtonA) then
-			print("OOPS! too quick on the draw!")
-			--penaltyTimer = playdate.frameTimer.new(1000)
-			penaltyTimer = playdate.frameTimer.new(2 * 20, function(penaltyTimer) penaltyTimer:remove() end) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
+			print("OOPS! player 2 was too quick on the draw!")
+			P2penaltyTimer = playdate.frameTimer.new(2 * 20, function(P2penaltyTimer) P2penaltyTimer:remove() end) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
+		end
+
+		-- if the player hits the button before the flag is waved, don't allow them to register another button press for ~1 second
+		if dpad_pressed() then
+			print("OOPS! player 1 was too quick on the draw!")
+			P1penaltyTimer = playdate.frameTimer.new(2 * 20, function(P1penaltyTimer) P1penaltyTimer:remove() end) --runs for 8 seconds at 20fps, and 4 seconds at 40fps
 		end
 	
 		if (flagTimer.value == 0 and not cactusPlayed) then
@@ -273,56 +337,42 @@ function quick_draw.update()
 			enemyShootTimer = playdate.frameTimer.new(randomNumber, randomNumber, 0)
 			enemyShootTimer:start()
 		end
+		
 	elseif gamestate == 'flag-waved' then
 		-- show button prompt sprite
 		if (buttonPromptShowing == false) then
-			--buttonToPressIndicator:start(buttonValueMap[buttonValue])
-			mobware.AbuttonIndicator:start()
-			mobware.DpadIndicator:start()
+			mobware.AbuttonIndicator.start()
+			mobware.DpadIndicator.start()
 			buttonPromptShowing = true
 		end
 		
-		-- if wrong button is pressed, play animation and move to defeat gamestate
-		--if playdate.buttonIsPressed(buttonValueMap[wrongButtonValue]) then
-			
-		--[[
-		elseif playdate.buttonIsPressed(playdate.kButtonA) then
-			
-			if (buttonPromptShowing) then
-				buttonPromptShowing = false
-				mobware.AbuttonIndicator:stop()
-			end
-			gunfireSound:play()
-			enemySprite:changeState('enemy_play')
-			cowboySprite:changeState('cowboy_dead')
-		
-			gamestate = 'defeat'
-		end
-		]]		
 
 		-- if A is pressed, have Player 2 shoot 
-		--if (playdate.buttonIsPressed(buttonValueMap[buttonValue])) then
 		if playdate.buttonIsPressed(playdate.kButtonA) then
 			
 			-- if the player hit the button too early, don't allow 
-			if penaltyTimer and (penaltyTimer.frame < penaltyTimer.duration)  then
+			if P2penaltyTimer and (P2penaltyTimer.frame < P2penaltyTimer.duration)  then
 				print("you can't shoot since you're in the penalty box!")
 			
 			else
 				-- stop the prompt move to next gamestate
-				--buttonToPressIndicator:stop()
 				mobware.AbuttonIndicator:stop()
 				mobware.DpadIndicator:stop()
 								
 				gunfireSound:play()
-				enemySprite:changeState('enemy_play')
-				cowboySprite:changeState('cowboy_dead')
+				player2sprite:changeState('enemy_play')
+				player1sprite:changeState('cowboy_dead')
 				-- knock over enemy sprite:
-				cowboySprite:setRotation(-90)
-				local _width, sprite_height = cowboySprite:getSize()
-				cowboySprite:moveTo(cowboySprite.x, cowboySprite.y+sprite_height/2)
+				player1sprite:setRotation(-90)
+				local _width, sprite_height = player1sprite:getSize()
+				player1sprite:moveTo(player1sprite.x, player1sprite.y+sprite_height/2)
 				gamestate = 'player2_wins'
-				
+				player2_score += 1
+				P2_score_sprite:setImage(draw_score(player2_score))
+				P1_score_sign:add()
+				P1_score_sprite:add()
+				P2_score_sign:add()
+				P2_score_sprite:add()
 			end
 		end
 		
@@ -330,44 +380,29 @@ function quick_draw.update()
 		if dpad_pressed() then
 			
 			-- if the player hit the button too early, don't allow 
-			if penaltyTimer and (penaltyTimer.frame < penaltyTimer.duration)  then
+			if P1penaltyTimer and (P1penaltyTimer.frame < P1penaltyTimer.duration)  then
 				print("you can't shoot since you're in the penalty box!")
 			
 			else
 				-- stop the prompt move to next gamestate
-				--buttonToPressIndicator:stop()
 				mobware.AbuttonIndicator:stop()
 				mobware.DpadIndicator:stop()
 				gunfireSound:play()
-				cowboySprite:changeState('cowboy_play')
-				enemySprite:changeState('enemy_dead')
+				player1sprite:changeState('cowboy_play')
+				player2sprite:changeState('enemy_dead')
 				-- knock over enemy sprite:
-				enemySprite:setRotation(90)
-				local _width, sprite_height = enemySprite:getSize()
-				enemySprite:moveTo(enemySprite.x, enemySprite.y+sprite_height/2)
+				player2sprite:setRotation(90)
+				local _width, sprite_height = player2sprite:getSize()
+				player2sprite:moveTo(player2sprite.x, player2sprite.y+sprite_height/2)
 				gamestate = 'player1_wins'
+				player1_score += 1
+				P1_score_sprite:setImage(draw_score(player1_score))
+				P1_score_sign:add()
+				P1_score_sprite:add()
+				P2_score_sign:add()
+				P2_score_sprite:add()
 			end
 		end
-		
-		--[[
-		-- if enemy shoot timer gets to 0, play animation and move to defeat gamestate
-		if (not playdate.buttonIsPressed(buttonValueMap[buttonValue]) and enemyShootTimer.value == 0) then
-			if (buttonPromptShowing) then
-				buttonPromptShowing = false
-				--buttonToPressIndicator:stop()
-				mobware.AbuttonIndicator:stop()
-			end
-			gunfireSound:play()
-			enemySprite:changeState('enemy_play')
-			cowboySprite:changeState('cowboy_dead')
-			-- knock over enemy sprite:
-			cowboySprite:setRotation(-90)
-			local _width, sprite_height = cowboySprite:getSize()
-			cowboySprite:moveTo(cowboySprite.x, cowboySprite.y+sprite_height/2)
-
-			gamestate = 'defeat'
-		end
-		]]
 
 
 	elseif gamestate == 'player1_wins' then
@@ -376,24 +411,36 @@ function quick_draw.update()
 			mobware.AbuttonIndicator:stop()
 		end
 
-		mobware.print("player 1 wins!", 90, 70)
+		if player1_score >= 5 then 
+			mobware.print("player 1 is the champ!", 45, 70)
+		else
+			mobware.print("player 1 wins!", 90, 70)
+		end
 
 		if (shootingAnimationFinished) then
-			--windSound:stop()
-			if dpad_pressed() then
-				player1_score += 1
+			if any_button_pressed() then
+				if player1_score >= 5 then 
+					player1_score = 0
+					player2_score = 0
+				end
 				reset_duel()
 			end
 		end
 
 	elseif gamestate == 'player2_wins' then
 
-		mobware.print("player 2 wins!", 90, 70)
-
+		if player2_score >= 5 then 
+			mobware.print("player 2 is the champ!", 45, 70)
+		else
+			mobware.print("player 2 wins!", 90, 70)
+		end
 		-- wait until animation finishes then exit
 		if (shootingAnimationFinished) then
-			if playdate.buttonIsPressed(playdate.kButtonA) then
-				player2_score += 1
+			if any_button_pressed() then
+				if player2_score >= 5 then 
+					player1_score = 0
+					player2_score = 0
+				end
 				reset_duel()
 			end
 		end
@@ -402,29 +449,6 @@ function quick_draw.update()
 
 end
 
-function any_button_pressed()
-	-- returns 1 if any button is pressed
-	if playdate.buttonIsPressed('a') then return 1 end
-	if playdate.buttonIsPressed('b') then return 1 end
-	if playdate.buttonIsPressed('up') then return 1 end
-	if playdate.buttonIsPressed('down') then return 1 end
-	if playdate.buttonIsPressed('left') then return 1 end
-	if playdate.buttonIsPressed('right') then return 1 end
-
-	-- if no button is pressed, return nil
-	return nil
-end
-
-function dpad_pressed()
-	-- returns 1 if any button on the d-pad is pressed
-	if playdate.buttonIsPressed('up') then return 1 end
-	if playdate.buttonIsPressed('down') then return 1 end
-	if playdate.buttonIsPressed('left') then return 1 end
-	if playdate.buttonIsPressed('right') then return 1 end
-
-	-- if no button is pressed, return nil
-	return nil
-end
 
 -- Minigame package should return itself
 return quick_draw
