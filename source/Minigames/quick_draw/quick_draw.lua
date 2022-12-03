@@ -47,6 +47,9 @@ local flagWaveSound = playdate.sound.sampleplayer.new('Minigames/quick_draw/soun
 
 -- Wind sound from https://mixkit.co/free-sound-effects/wind/
 local windSound = playdate.sound.sampleplayer.new('Minigames/quick_draw/sounds/light-wind.wav')
+-- soundtrack
+local soundtrack = playdate.sound.sampleplayer.new('Minigames/quick_draw/sounds/gunslingers')
+local victory_soundtrack = playdate.sound.sampleplayer.new('Minigames/quick_draw/sounds/gunslingers_victory')
 
 -- Images
 local cowboyImageTable = gfx.imagetable.new('Minigames/quick_draw/images/cowboy-table-39-76.png')
@@ -215,6 +218,7 @@ function quick_draw.update()
 	-- show game start animation
 	if gamestate == 'beginning' then
 		windSound:play()
+		soundtrack:play(0)
 
 		if (openingAnimationDone and not flagTimer) then
 			local randomNumber = math.random(20 * 3, 20 * 6) -- between 3s and 6s at 20fps 
@@ -252,23 +256,6 @@ function quick_draw.update()
 			buttonPromptShowing = true
 		end
 		
-		-- if wrong button is pressed, play animation and move to defeat gamestate
-		--if playdate.buttonIsPressed(buttonValueMap[wrongButtonValue]) then
-			
-		--[[
-		elseif playdate.buttonIsPressed(playdate.kButtonA) then
-			
-			if (buttonPromptShowing) then
-				buttonPromptShowing = false
-				mobware.AbuttonIndicator:stop()
-			end
-			gunfireSound:play()
-			enemySprite:changeState('enemy_play')
-			cowboySprite:changeState('cowboy_dead')
-		
-			gamestate = 'defeat'
-		end
-		]]		
 
 		-- if correct button is pressed, shoot enemy cowboy
 		--if (playdate.buttonIsPressed(buttonValueMap[buttonValue])) then
@@ -280,7 +267,6 @@ function quick_draw.update()
 			
 			else
 				-- stop the prompt move to next gamestate
-				--buttonToPressIndicator:stop()
 				mobware.AbuttonIndicator:stop()
 				gunfireSound:play()
 				cowboySprite:changeState('cowboy_play')
@@ -290,6 +276,8 @@ function quick_draw.update()
 				local _width, sprite_height = enemySprite:getSize()
 				enemySprite:moveTo(enemySprite.x, enemySprite.y+sprite_height/2)
 				gamestate = 'victory'
+				soundtrack:stop()
+				victory_soundtrack:play(1)
 			end
 		end
 
@@ -297,7 +285,6 @@ function quick_draw.update()
 		if (not playdate.buttonIsPressed(buttonValueMap[buttonValue]) and enemyShootTimer.value == 0) then
 			if (buttonPromptShowing) then
 				buttonPromptShowing = false
-				--buttonToPressIndicator:stop()
 				mobware.AbuttonIndicator:stop()
 			end
 			gunfireSound:play()
@@ -315,7 +302,6 @@ function quick_draw.update()
 	elseif gamestate == 'victory' then
 		if (buttonPromptShowing) then
 			buttonPromptShowing = false
-			--buttonToPressIndicator:stop()
 			mobware.AbuttonIndicator:stop()
 		end
 
@@ -323,6 +309,7 @@ function quick_draw.update()
 
 		if (shootingAnimationFinished) then
 			-- returning 1 will end the game and indicate the the player has won the minigame
+			playdate.wait(2500)
 			windSound:stop()
 			return 1
 		end
