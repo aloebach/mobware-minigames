@@ -14,7 +14,7 @@ local quick_draw = {}
 -- all of the code here will be run when the minigame is loaded, so here we'll initialize our graphics and variables:
 local gfx <const> = playdate.graphics
 
-playdate.display.setRefreshRate( 30 )
+playdate.display.setRefreshRate( 40 )
 
 -- uninitialized variables
 local flagTimer = nil
@@ -155,7 +155,7 @@ local cowboyStates = {
 		name = 'cowboy_gunsmoke',
 		firstFrameIndex = 5,
 		framesCount = 4,
-		tickStep = 2,
+		tickStep = 3,
 		loop = 3,
 		nextAnimation = 'cowboy_idle',
 		xScale = 2, 
@@ -204,7 +204,7 @@ local enemyStates = {
 		name = 'enemy_gunsmoke',
 		firstFrameIndex = 5,
 		framesCount = 4,
-		tickStep = 2,
+		tickStep = 3,
 		loop = 3,
 		nextAnimation = 'enemy_idle',
 		xScale = 2, 
@@ -427,12 +427,6 @@ function quick_draw.update()
 
 
 	elseif gamestate == 'player1_wins' then
-		--[[
-		if (buttonPromptShowing) then
-			buttonPromptShowing = false
-			mobware.AbuttonIndicator:stop()
-		end
-		]]
 
 		if player1_score >= 5 then 
 			soundtrack:stop()
