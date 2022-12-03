@@ -90,6 +90,12 @@ local flagWaveSound = playdate.sound.sampleplayer.new('extras/quick_draw/sounds/
 -- Wind sound from https://mixkit.co/free-sound-effects/wind/
 local windSound = playdate.sound.sampleplayer.new('extras/quick_draw/sounds/light-wind.wav')
 
+-- load and play soundtrack
+local soundtrack = playdate.sound.fileplayer.new('extras/quick_draw/sounds/Gunslingers')
+local victory_song = playdate.sound.fileplayer.new('extras/quick_draw/sounds/Gunslingers_victory')
+
+soundtrack:play(0)
+
 -- Images
 local P1_ImageTable = gfx.imagetable.new('extras/quick_draw/images/cowboy-table-39-76.png')
 assert(P1_ImageTable)
@@ -394,8 +400,15 @@ function quick_draw.update()
 				player2sprite:setRotation(90)
 				local _width, sprite_height = player2sprite:getSize()
 				player2sprite:moveTo(player2sprite.x, player2sprite.y+sprite_height/2)
-				gamestate = 'player1_wins'
-				player1_score += 1
+				if gamestate == 'player2_wins' then
+					-- here we have draw since both players fired on the same frame, so we subtract the point back from player 2 and go to "draw" state
+					gamestate = 'draw'
+					player2_score -= 1
+					P2_score_sprite:setImage(draw_score(player2_score))
+				else
+					gamestate = 'player1_wins'
+					player1_score += 1
+				end
 				P1_score_sprite:setImage(draw_score(player1_score))
 				P1_score_sign:add()
 				P1_score_sprite:add()
@@ -404,14 +417,26 @@ function quick_draw.update()
 			end
 		end
 
+	elseif gamestate == 'draw' then
+		mobware.print("draw!")
+		if (shootingAnimationFinished) then
+			if any_button_pressed() then
+				reset_duel()
+			end
+		end
+
 
 	elseif gamestate == 'player1_wins' then
+		--[[
 		if (buttonPromptShowing) then
 			buttonPromptShowing = false
 			mobware.AbuttonIndicator:stop()
 		end
+		]]
 
 		if player1_score >= 5 then 
+			soundtrack:stop()
+			victory_song:play(1)
 			mobware.print("player 1 is the champ!", 45, 70)
 		else
 			mobware.print("player 1 wins!", 90, 70)
@@ -422,7 +447,11 @@ function quick_draw.update()
 				if player1_score >= 5 then 
 					player1_score = 0
 					player2_score = 0
+					P1_score_sprite:setImage(draw_score(player1_score))
+					P2_score_sprite:setImage(draw_score(player2_score))
 				end
+				victory_song:stop()
+				soundtrack:play(0)
 				reset_duel()
 			end
 		end
@@ -430,6 +459,8 @@ function quick_draw.update()
 	elseif gamestate == 'player2_wins' then
 
 		if player2_score >= 5 then 
+			soundtrack:stop()
+			victory_song:play(1)
 			mobware.print("player 2 is the champ!", 45, 70)
 		else
 			mobware.print("player 2 wins!", 90, 70)
@@ -440,7 +471,11 @@ function quick_draw.update()
 				if player2_score >= 5 then 
 					player1_score = 0
 					player2_score = 0
+					P1_score_sprite:setImage(draw_score(player1_score))
+					P2_score_sprite:setImage(draw_score(player2_score))
 				end
+				victory_song:stop()
+				soundtrack:play(0)
 				reset_duel()
 			end
 		end
