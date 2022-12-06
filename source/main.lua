@@ -71,10 +71,8 @@ local demon_spritesheet = gfx.imagetable.new("images/demon_big")
 
 -- initialize music
 local main_theme = playdate.sound.fileplayer.new('sounds/mobwaretheme')
---local victory_music = playdate.sound.fileplayer.new('sounds/victory_v2')
---local defeat_music = playdate.sound.fileplayer.new('sounds/defeat')
-local victory_music = playdate.sound.fileplayer.new('sounds/mobware_EDM_Bass')
-local defeat_music = playdate.sound.fileplayer.new('sounds/mobware_minigame_lost')
+local victory_music = playdate.sound.fileplayer.new('sounds/victory_theme')
+local defeat_music = playdate.sound.fileplayer.new('sounds/sad_trombone')
 
 -- initialize sound effects for menu
 local click_sound_1 = playdate.sound.sampleplayer.new('sounds/click1')
@@ -337,7 +335,8 @@ function playdate.update()
 			end -- remove sprite once animation completes
 			
 			-- update music speed depending on the player's progress
-			local music_rate = math.min(1 + time_scaler / 20, 2)
+			local music_rate = math.min(1 + time_scaler / 20, 1.8)
+			if SET_FRAME_RATE then music_rate = math.min(SET_FRAME_RATE / 20, 1.8) end
 			
 			-- animate demon laughing or crying depending on if the player won the minigame
 			if game_result == 0 then 
@@ -524,7 +523,7 @@ sysMenu:addMenuItem(
 		GameState = "bonus menu"
 	end
 )
-
+--[[
 -- Add menu option to view credits
 sysMenu:addMenuItem(
 	'Game Credits',
@@ -533,13 +532,13 @@ sysMenu:addMenuItem(
 		GameState = "credits"
 	end
 )
---[[ OPTIONAL DEBUGGING MENU OPTION TO CHOOSE MINIGAME:
+]]
+-- OPTIONAL DEBUGGING MENU OPTION TO CHOOSE MINIGAME:
 sysMenu:addOptionsMenuItem("game:", minigame_list, 
 	function(selected_minigame)
 		DEBUG_GAME = selected_minigame
 	end
 )
-]]
 
 -- For debugging
 function  playdate.keyPressed(key)

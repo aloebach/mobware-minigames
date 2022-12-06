@@ -13,9 +13,10 @@ class('Playdate').extends(AnimatedSprite)
 local gfx <const> = playdate.graphics
 
 -- define Playdate spritesheet
---local playdate_spritesheet = gfx.imagetable.new("images/playdate_spinning")
---local playdate_spritesheet = gfx.imagetable.new("images/playdate_small")
 local playdate_spritesheet = gfx.imagetable.new("images/playdate_XS")
+
+-- load sound effect
+local throw_sound = playdate.sound.sampleplayer.new('sounds/throw')
 
 function Playdate:new(x, y, speed)
     self = Playdate.super.new(playdate_spritesheet)
@@ -34,6 +35,9 @@ function Playdate:new(x, y, speed)
     self:moveTo(x, y)
     self.speed = speed or 20
 
+    -- play throw sound effect
+    throw_sound:play(1)
+    
     function self:update()
 
         --Update position of Playdate
