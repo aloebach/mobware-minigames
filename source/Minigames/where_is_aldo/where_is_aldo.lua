@@ -17,7 +17,7 @@ local gfx <const> = pd.graphics
 math.randomseed(pd.getSecondsSinceEpoch())
 
 gamestate = 'intro'
-local number_of_NPCs = 50
+local number_of_NPCs = 60
 local GAME_TIME_LIMIT = 8 -- minigame time limit (at 20fps)
 local found_counter = 0
 
@@ -64,6 +64,8 @@ end
 gfx.sprite.update()
 local zoomed_image = gfx.getWorkingImage():scaledImage(2)
 local mask_image = gfx.image.new( zoomed_image:getSize())
+-- obscure sprites with background image before moving into "play" state:
+backgroundSprite:getImage():draw(0,0)
 
 -- show magnifying glass
 local cursorSprite = MagnifyingGlass()
