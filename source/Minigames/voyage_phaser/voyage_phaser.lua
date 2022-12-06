@@ -76,7 +76,7 @@ mobware.crankIndicator.start()
 local animtime = 0
 
 local enemies = {}
-for i=1, 4 do
+for i=1, 3 do
 	enemies[i] = {}
 	local r = (math.random() * 32) + 128
 	local a = math.random() * 2 * math.pi
