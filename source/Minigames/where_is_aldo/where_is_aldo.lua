@@ -17,7 +17,7 @@ local gfx <const> = pd.graphics
 math.randomseed(pd.getSecondsSinceEpoch())
 
 gamestate = 'intro'
-local number_of_NPCs = 60
+local number_of_NPCs = 20 + playdate.display.getRefreshRate() -- number of NPCs scales with the difficulty
 local GAME_TIME_LIMIT = 8 -- minigame time limit (at 20fps)
 local found_counter = 0
 
