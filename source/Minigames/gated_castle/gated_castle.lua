@@ -67,13 +67,13 @@ local function initialize()
 	random_scenario = math.random(0, 1)
 	if(random_scenario == 1) then
 		gamestate = 'closeGate'
-		creature = Minotaur:new(20, 160, CREATURE_SPEED)
+		creature = Minotaur:new(0, 160, CREATURE_SPEED)
 		gate_frame_num = 4
 		victory_message = "Stay away, fiend!"
 		defeat_message = "The keep has fallen!"
 	else
 		gamestate =  'openGate'
-		creature = OldWoman:new(20, 170, CREATURE_SPEED)
+		creature = OldWoman:new(0, 170, CREATURE_SPEED)
 		gate_frame_num = 1
 		victory_message = "Welcome, milady!"
 		defeat_message = "Milady! Oh no!"
