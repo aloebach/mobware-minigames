@@ -25,7 +25,8 @@ background:moveTo(200, 120)
 background:addSprite()
 
 -- display input prompt for Accelerometer
---mobware.AccelerometerIndicator.start("left", "right")
+mobware.AccelerometerIndicator.start("left", "right")
+mobware.AccelerometerIndicator_sprite.states.custom.tickStep = 8
 
 --> Initialize music and sound effects
 local music_box = playdate.sound.sampleplayer.new('Minigames/rock_the_baby/sounds/Music_Box')
@@ -41,7 +42,7 @@ playdate.startAccelerometer()
 local x,y,z = playdate.readAccelerometer()
 
 -- set gamestate variable
-local gamestate = 'play'
+local gamestate = 'intro'
 
 -- initialize variables
 local shake_counter = 0
@@ -101,7 +102,21 @@ function rock_the_baby.update()
 	-- update timer
 	playdate.frameTimer.updateTimers()
 
-	if gamestate == "play" then
+	if gamestate == "intro" then
+		
+		-- updates all sprites (to put accelerometer indicator in front)
+		gfx.sprite.update() 
+				
+		mobware.print("cradle the baby to sleep")
+		
+		-- after showing directions for 20 frames, move to play state		
+		if game_timer.frame > 30 then
+			mobware.AccelerometerIndicator.stop()
+			gamestate = "play" 
+		end
+
+
+	elseif gamestate == "play" then
 		
 		-- if you rocked the baby too much go to the defeat gamestate where the baby starts crying
 		if math.abs(ax) > ROCK_THRESHOLD and math.abs(previous_ax) < ROCK_THRESHOLD then
