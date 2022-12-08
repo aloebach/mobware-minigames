@@ -26,7 +26,7 @@ background:addSprite()
 
 -- display input prompt for Accelerometer
 mobware.AccelerometerIndicator.start("left", "right")
-mobware.AccelerometerIndicator_sprite.states.custom.tickStep = 8
+mobware.AccelerometerIndicator_sprite.states.custom.tickStep = 5
 
 --> Initialize music and sound effects
 local music_box = playdate.sound.sampleplayer.new('Minigames/rock_the_baby/sounds/Music_Box')
@@ -48,9 +48,9 @@ local gamestate = 'intro'
 local shake_counter = 0
 local rock_counter = 0
 local cry_counter = 0
-local ROCK_THRESHOLD = 0.3 -- threshold at which we disturb the baby
+local ROCK_THRESHOLD = 0.25 -- threshold at which we disturb the baby
 local CRYING_THRESHOLD = 2 -- number of times we can rock too hard before the baby starts crying uncontrollably
-local WINNING_SCORE = 10
+local WINNING_SCORE = 12
 local MAX_GAME_TIME = 8 -- maximum time (in seconds) minigame should run (at 20fps)
 local minigame_finished = nil
 
@@ -60,10 +60,7 @@ local previous_ax, previous_ay, previous_az = playdate.readAccelerometer()
 -- math stuffs for rotating crib
 local imageTransform = playdate.geometry.affineTransform.new()
 
-local function end_minigame()
-	print("ending minigame")
-	minigame_finished = true
-end
+local function end_minigame()	minigame_finished = true	end
 
 -- start timer that will trigger the defeat animation if the player doesn't win before time runs out
 	--> after <MAX_GAME_TIME> seconds (at 20 fps) will set "defeat" gamestate
@@ -86,7 +83,6 @@ function rock_the_baby.update()
 
 	-- read values from accelerometer (we're only interested in the x axis for the "rocking" motion though)
 	local ax,ay,az = playdate.readAccelerometer()
-	--print("ax: ", ax)
 
 	-- transform logic for rotating crib image
 	local angle = ax * 45
@@ -107,7 +103,7 @@ function rock_the_baby.update()
 		-- updates all sprites (to put accelerometer indicator in front)
 		gfx.sprite.update() 
 				
-		mobware.print("cradle the baby to sleep")
+		mobware.print("rock the baby to sleep")
 		
 		-- after showing directions for 20 frames, move to play state		
 		if game_timer.frame > 30 then
@@ -122,7 +118,6 @@ function rock_the_baby.update()
 		if math.abs(ax) > ROCK_THRESHOLD and math.abs(previous_ax) < ROCK_THRESHOLD then
 			cry_counter += 1
 			whining_baby:play(1)
-			print("Cry counter: ", cry_counter)
 			if cry_counter >= CRYING_THRESHOLD then
 				game_timer:remove()
 				baby:load("Minigames/rock_the_baby/images/crying_baby") 	-- change image to crying baby
@@ -141,7 +136,6 @@ function rock_the_baby.update()
 		-- if the transform crosses the zero-axis we consider it a successful rock
 		if ax * previous_ax < 0 then
 			rock_counter += 1
-			print("Rock counter: ", rock_counter)
 			if rock_counter > WINNING_SCORE then
 				game_timer:remove()
 				music_box:stop()
