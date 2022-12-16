@@ -60,6 +60,7 @@ function cheat_code.update()
 		end
 		
 	elseif gamestate == 'up2' then
+		mobware.print('↑ ↑ ↓ ↓ ← → ← → Ⓑ Ⓐ 🎣',35,50)		
 		if playdate.buttonJustPressed('up') then
 			mobware.DpadIndicator.stop()			
 			mobware.DpadIndicator.start('down')
@@ -67,11 +68,13 @@ function cheat_code.update()
 		end
 
 	elseif gamestate == 'down1' then
+		mobware.print('↑ ↑ ↓ ↓ ← → ← → Ⓑ Ⓐ 🎣',35,50)		
 		if playdate.buttonJustPressed('down') then
 			gamestate = 'down2'
 		end
 
 	elseif gamestate == 'down2' then
+		mobware.print('↑ ↑ ↓ ↓ ← → ← → Ⓑ Ⓐ 🎣',35,50)		
 		if playdate.buttonJustPressed('down') then
 			mobware.DpadIndicator.stop()
 			mobware.DpadIndicator.start('left')
@@ -79,6 +82,7 @@ function cheat_code.update()
 		end
 
 	elseif gamestate == 'left1' then
+		mobware.print('↑ ↑ ↓ ↓ ← → ← → Ⓑ Ⓐ 🎣',35,50)		
 		if playdate.buttonJustPressed('left') then
 			mobware.DpadIndicator.stop()
 			mobware.DpadIndicator.start('right')
@@ -86,6 +90,7 @@ function cheat_code.update()
 		end
 
 	elseif gamestate == 'right1' then
+		mobware.print('↑ ↑ ↓ ↓ ← → ← → Ⓑ Ⓐ 🎣',35,50)		
 		if playdate.buttonJustPressed('right') then
 			mobware.DpadIndicator.stop()
 			mobware.DpadIndicator.start('left')
@@ -93,6 +98,7 @@ function cheat_code.update()
 		end
 		
 	elseif gamestate == 'left2' then
+		mobware.print('↑ ↑ ↓ ↓ ← → ← → Ⓑ Ⓐ 🎣',35,50)		
 		if playdate.buttonJustPressed('left') then
 			mobware.DpadIndicator.stop()
 			mobware.DpadIndicator.start('right')
@@ -100,6 +106,7 @@ function cheat_code.update()
 		end
 		
 	elseif gamestate == 'right2' then
+		mobware.print('↑ ↑ ↓ ↓ ← → ← → Ⓑ Ⓐ 🎣',35,50)		
 		if playdate.buttonJustPressed('right') then
 			mobware.DpadIndicator.stop()
 			mobware.BbuttonIndicator.start()
