@@ -50,8 +50,8 @@ local rock_counter = 0
 local cry_counter = 0
 local ROCK_THRESHOLD = 0.25 -- threshold at which we disturb the baby
 local CRYING_THRESHOLD = 2 -- number of times we can rock too hard before the baby starts crying uncontrollably
-local WINNING_SCORE = 12
-local MAX_GAME_TIME = 8 -- maximum time (in seconds) minigame should run (at 20fps)
+local WINNING_SCORE = 8
+local MAX_GAME_TIME = 10 -- maximum time (in seconds) minigame should run (at 20fps)
 local minigame_finished = nil
 
 -- initialize "previous" accelerometer values 
