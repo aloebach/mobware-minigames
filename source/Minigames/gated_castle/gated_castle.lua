@@ -228,7 +228,7 @@ function gated_castle.cranked(change, acceleratedChange)
 		if crank_with_offset < 0 then
 			crank_with_offset = crank_with_offset + 360
 		end
-		gate_frame_num = math.floor( crank_with_offset / 90 + 1 )
+		gate_frame_num = math.floor( crank_with_offset / 90.1 + 1 )
 		gate:setImage(gate_image_table:getImage(gate_frame_num))
 	end
 end
