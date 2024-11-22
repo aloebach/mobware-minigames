@@ -8,7 +8,7 @@
 ]]
 
 -- variables for use with testing/debugging:
--- DEBUG_GAME = "minigame_kunstofweg" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
+DEBUG_GAME = "geit" --> Set "DEBUG_GAME" variable to the name of a minigame and it'll be chosen every time!
 --SET_FRAME_RATE = 40 --> as the name implies will set a framerate. Used for testing minigames at various framerates
 
 -- Import CoreLibs
@@ -162,6 +162,9 @@ function playdate.update()
 
 		-- Load minigame package:
 		minigame = load_minigame(minigame_path)
+		if minigame and minigame.init then
+			minigame.init()
+		end
 		GameState = 'play'
 	elseif GameState == 'play' then
 		playdate.timer.updateTimers()

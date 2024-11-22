@@ -85,6 +85,7 @@ function load_minigame(game_file)
 	minigame = _minigame_env
 	_minigame_env.import = function(a) playdate.file.run( a, _minigame_env) end -- special import function to allow minigames to import libraries at runtime
 	minigame = playdate.file.run(game_file, _minigame_env) --loads minigame package to "game" variable
+	
 	return minigame
 end
 
